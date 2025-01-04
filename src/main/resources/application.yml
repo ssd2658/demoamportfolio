@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:sqlserver://amportfolio.database.windows.net:1433;database=amportfolionp;user=am@amportfolio;password=@M1unish;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect
+    hibernate:
+      ddl-auto: update  # Automatically create or update tables
+    show-sql: true  # Shows SQL statements in the console
+    properties:
+      hibernate:
+        format_sql: true
