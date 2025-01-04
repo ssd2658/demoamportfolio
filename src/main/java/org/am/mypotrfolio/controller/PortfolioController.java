@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.am.mypotrfolio.domain.NseStock;
 import org.am.mypotrfolio.domain.SectorInvestmentDTO;
+import org.am.mypotrfolio.entity.NseStockEntity;
 import org.am.mypotrfolio.model.Constant;
 import org.am.mypotrfolio.repo.NseStockRepository;
 import org.am.mypotrfolio.service.CompanyMasterData;
 import org.am.mypotrfolio.service.DhanService;
 import org.am.mypotrfolio.service.MStockService;
 import org.am.mypotrfolio.service.MutualFundService;
+import org.am.mypotrfolio.service.NseStockService;
 import org.am.mypotrfolio.service.TestService;
 import org.am.mypotrfolio.service.ZerodhaService;
 import org.springframework.core.io.ByteArrayResource;
@@ -38,6 +40,7 @@ public class PortfolioController {
     private final DhanService dhanPortfolioService;
 
     private final MStockService mStockPortfolioService;
+    private final NseStockService nsestockService;
 
     private final ZerodhaService zerodhaPortfolioService;
 
@@ -73,9 +76,9 @@ public class PortfolioController {
         companyMasterData.processCompanyRecords("Company") ;
     }
 
-    @GetMapping(path = "/test")
+    @GetMapping(path = "/test1")
     public String test1() {
-        return new String("Hellow") ;
+        return nsestockService.test().toString() ;
     }
 
     @GetMapping(path = "/portfolio")
