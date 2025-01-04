@@ -1,6 +1,8 @@
 spring:
   datasource:
     url: jdbc:sqlserver://amportfolio.database.windows.net:1433;database=amportfolionp;user=am@amportfolio;password=@M1unish;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;
+    username: am@amportfolio
+    password: "@M1unish"
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
   jpa:
     database-platform: org.hibernate.dialect.SQLServerDialect

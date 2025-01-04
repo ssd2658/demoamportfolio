@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.am.mypotrfolio.repo.NseStockRepository;
 import org.am.mypotrfolio.utils.ObjectUtils;
 import org.am.mypotrfolio.domain.NseStock;
+import org.am.mypotrfolio.mapper.NseStockMapper;
 import org.am.mypotrfolio.domain.Company;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -24,7 +25,14 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class NseStockService {
-    private NseStockRepository nseStockRepository;
+    private final NseStockRepository nseStockRepository;
+
+    public NseStock test()  {
+        var nsestock = NseStock.builder().symbol("AASS").build();
+       var nseStockEntity =  NseStockMapper.INSTANCE.mapNseStockEntity(nsestock);
+       nseStockRepository.save(nseStockEntity);
+       return nsestock;
+    }
 
     public NseStock processNseStock(String nseStockPath) throws IOException {
 
