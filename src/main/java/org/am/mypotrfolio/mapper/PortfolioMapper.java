@@ -9,17 +9,12 @@ import org.am.mypotrfolio.domain.DhanStockPortfolio;
 import org.am.mypotrfolio.domain.MStockPortfolio;
 import org.am.mypotrfolio.domain.NseStock;
 import org.am.mypotrfolio.domain.ZerodhaStockPortfolio;
-import org.am.mypotrfolio.utils.ObjectUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
 
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
-
-import lombok.val;
-import lombok.var;
 
 @Mapper(componentModel = "spring")
 public interface PortfolioMapper {
