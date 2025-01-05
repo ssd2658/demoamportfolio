@@ -1,6 +1,8 @@
 package org.am.mypotrfolio.utils;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+
 import org.am.mypotrfolio.domain.MutualFunds;
 import org.am.mypotrfolio.domain.NseStock;
 import org.am.mypotrfolio.mapper.NseStockMapper;
@@ -13,6 +15,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+
+import io.micrometer.common.util.StringUtils;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -30,7 +34,52 @@ public class NseFileBuilder {
 
     private final NseStockRepository nseStockRepository;
 
-    public  List<Map<String, String>> parseExcel(MultipartFile file) throws Exception {
+    public  List<Map<String, String>> parseExcel(MultipartFile file, String brokerType) throws Exception {
+        if(brokerType.equalsIgnoreCase("Zerodha")) {
+            return parseZerodhaExcel(file);
+        }
+        return parseDhanExcel(file);
+    }
+
+    @SneakyThrows
+    private List<Map<String, String>> parseZerodhaExcel(MultipartFile file) {
+        List<Map<String, String>> jsonList = new ArrayList<>();
+
+        try (InputStream inputStream = file.getInputStream();
+             Workbook workbook = new XSSFWorkbook(inputStream)) {
+
+            Sheet sheet = workbook.getSheetAt(0); // Read first sheet
+            Iterator<Row> rowIterator = sheet.iterator();
+            
+            List<String> headers = new ArrayList<>();
+
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (row.getRowNum() >=0 && row.getRowNum()<22) continue;
+                Map<String, String> rowData = new LinkedHashMap<>();
+                for (Cell cell : row) {
+                    cell.setCellType(CellType.STRING); // Convert all cells to string
+                     // && !StringUtils.isEmpty(cell.getStringCellValue().trim())
+                    if (row.getRowNum() == 22 ) { // Read header row
+                        headers.add(cell.getStringCellValue().trim());
+                    } else { // Read data rows
+                        if (cell.getColumnIndex() < headers.size()-1) {
+                            rowData.put(headers.get(cell.getColumnIndex() -1 ), cell.getStringCellValue());
+                        }
+                    }
+                }
+
+                if (!rowData.isEmpty()) {
+                    jsonList.add(rowData);
+                }
+            }
+        }
+
+        return jsonList;
+    }
+
+    @SneakyThrows
+    private List<Map<String, String>> parseDhanExcel(MultipartFile file) {
         List<Map<String, String>> jsonList = new ArrayList<>();
 
         try (InputStream inputStream = file.getInputStream();
@@ -66,7 +115,7 @@ public class NseFileBuilder {
         return jsonList;
     }
 
-    
+
     public void writeToExcel(List<NseStock> data) {
 
         String path = "C:\\Users\\MKU257\\Downloads\\BidLines.xlsx";

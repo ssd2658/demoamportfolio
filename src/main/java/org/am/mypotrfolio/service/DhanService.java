@@ -55,7 +55,7 @@ public class DhanService implements PortfolioService{
     @Override
     @SneakyThrows
     public List<NseStock> processNseStock(MultipartFile file){
-         List<Map<String, String>> fileJson = nseFileBuilder.parseExcel(file);
+         List<Map<String, String>> fileJson = nseFileBuilder.parseExcel(file, "Dhan");
          ObjectMapper objectMapper = new ObjectMapper();
         String payload = objectMapper.writeValueAsString(fileJson);
 
@@ -67,6 +67,7 @@ public class DhanService implements PortfolioService{
         List<NseStock> nseStocks = stocks.stream().map(stock -> {
             var dhanStock = PortfolioMapper.INSTANCE.mapNseStock(stock, companies);
             var nseEntity = NseStockMapper.INSTANCE.mapNseStockEntity(dhanStock);
+            nseEntity.setBrokerPlatform("Dhan");
             nseStockRepository.save(nseEntity);
             return dhanStock;
         }).collect(Collectors.toList());

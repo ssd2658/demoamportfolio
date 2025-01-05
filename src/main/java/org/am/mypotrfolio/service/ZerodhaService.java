@@ -7,6 +7,7 @@ import org.am.mypotrfolio.utils.NseFileBuilder;
 import org.am.mypotrfolio.domain.Company;
 import org.am.mypotrfolio.domain.DhanStockPortfolio;
 import org.am.mypotrfolio.domain.NseStock;
+import org.am.mypotrfolio.domain.ZerodhaStockPortfolio;
 import org.am.mypotrfolio.mapper.NseStockMapper;
 import org.am.mypotrfolio.mapper.PortfolioMapper;
 import org.am.mypotrfolio.repo.NseStockRepository;
@@ -41,23 +42,21 @@ public class ZerodhaService implements PortfolioService{
     private final ResourceLoader resourceLoader;
     private final NseStockRepository nseStockRepository;
 
-@Override
+    @Override
     @SneakyThrows
     public List<NseStock> processNseStock(MultipartFile file){
-         List<Map<String, String>> fileJson = nseFileBuilder.parseExcel(file);
+         List<Map<String, String>> fileJson = nseFileBuilder.parseExcel(file, "Zerodha");
          ObjectMapper objectMapper = new ObjectMapper();
         String payload = objectMapper.writeValueAsString(fileJson);
 
-        List<DhanStockPortfolio> stocks = objectMapper.readValue(payload, new TypeReference<List<DhanStockPortfolio>>() {});
-        Resource resource = resourceLoader.getResource("classpath:stock.json");
-        var stockPyalod = new String(Files.readAllBytes(Paths.get(resource.getURI())));
-        List<Company> companies = objectMapper.readValue(stockPyalod, new TypeReference<List<Company>>() {});
+        List<ZerodhaStockPortfolio> stocks = objectMapper.readValue(payload, new TypeReference<List<ZerodhaStockPortfolio>>() {});
 
         List<NseStock> nseStocks = stocks.stream().map(stock -> {
-            var dhanStock = PortfolioMapper.INSTANCE.mapNseStock(stock, companies);
-            var nseEntity = NseStockMapper.INSTANCE.mapNseStockEntity(dhanStock);
+            var zerodhaStock = PortfolioMapper.INSTANCE.toNseStockFromZerodha(stock);
+            var nseEntity = NseStockMapper.INSTANCE.mapNseStockEntity(zerodhaStock);
+            nseEntity.setBrokerPlatform("Zerodha");
             nseStockRepository.save(nseEntity);
-            return dhanStock;
+            return zerodhaStock;
         }).collect(Collectors.toList());
         return nseStocks;
     }

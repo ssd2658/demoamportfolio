@@ -8,6 +8,7 @@ import org.am.mypotrfolio.domain.Company;
 import org.am.mypotrfolio.domain.DhanStockPortfolio;
 import org.am.mypotrfolio.domain.MStockPortfolio;
 import org.am.mypotrfolio.domain.NseStock;
+import org.am.mypotrfolio.domain.ZerodhaStockPortfolio;
 import org.am.mypotrfolio.utils.ObjectUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -24,6 +25,14 @@ import lombok.var;
 public interface PortfolioMapper {
 
     PortfolioMapper INSTANCE = Mappers.getMapper(PortfolioMapper.class);
+
+    @Mapping(source = "symbol", target = "symbol")
+    @Mapping(source = "quantityAvailable", target = "quantity")
+    @Mapping(source = "averagePrice", target = "avePrice")
+    @Mapping(expression = "java(stockInfo.getQuantityAvailable() * stockInfo.getAveragePrice())", target = "investedValue")
+    @Mapping(expression = "java(stockInfo.getQuantityAvailable() * stockInfo.getPreviousClosingPrice())", target = "currentValue")
+    @Mapping(expression = "java((stockInfo.getQuantityAvailable() * stockInfo.getPreviousClosingPrice()) - (stockInfo.getQuantityAvailable() * stockInfo.getAveragePrice()))", target = "overAllPNL")
+    NseStock toNseStockFromZerodha(ZerodhaStockPortfolio stockInfo);
 
     @Mapping(source = "symbol", target = "symbol")
     @Mapping(source = "quantity", target = "quantity", qualifiedByName = "stringToDouble")
@@ -44,6 +53,14 @@ public interface PortfolioMapper {
 
     @Named("stringToDouble")
     default double stringToDouble(String value) {
+        if (value == null || value.isEmpty()) {
+            return 0.0;
+        }
+        return Double.parseDouble(value);
+    }
+
+    @Named("overAllPNL")
+    default double overAllPNL(String value) {
         if (value == null || value.isEmpty()) {
             return 0.0;
         }
