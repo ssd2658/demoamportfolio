@@ -6,10 +6,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Builder
 @Data
 @Getter
 @Setter
+@NoArgsConstructor
 public class Company {
     String symbol;
     String companyName;

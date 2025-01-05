@@ -49,16 +49,16 @@ public class CompanyMasterData {
     }
 
     private Company getCompany(Row stock, int currentRowNum) {
-        System.out.println("Current row num: " + currentRowNum);
-        var comapny =  Company.builder()
-                .symbol(stock.getCell(0).getStringCellValue().replace(".NS", ""))
-                .companyName(stock.getCell(15) == null ? "Not Found" : stock.getCell(8).getStringCellValue())
-                .marketCapital(stock.getCell(4).getNumericCellValue())
-                .sector(stock.getCell(15) == null ? "Others" : stock.getCell(15).getStringCellValue())
-                .build();
-        var companyEntity = CompanyMapper.INSTANCE.COMPANY_ENTITY(comapny);
-        companyRepository.save(companyEntity);
-        return comapny;
+        // System.out.println("Current row num: " + currentRowNum);
+        // var comapny =  Company.builder()
+        //         .symbol(stock.getCell(0).getStringCellValue().replace(".NS", ""))
+        //         .companyName(stock.getCell(15) == null ? "Not Found" : stock.getCell(8).getStringCellValue())
+        //         .marketCapital(stock.getCell(4).getNumericCellValue())
+        //         .sector(stock.getCell(15) == null ? "Others" : stock.getCell(15).getStringCellValue())
+        //         .build();
+        // var companyEntity = CompanyMapper.INSTANCE.COMPANY_ENTITY(comapny);
+        // companyRepository.save(companyEntity);
+        return null;
     }
 
 }

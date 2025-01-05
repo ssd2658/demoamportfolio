@@ -7,9 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface NseStockRepository extends JpaRepository<NseStockEntity, String> {
+public interface NseStockRepository extends JpaRepository<NseStockEntity, UUID> {
 
     @Query("SELECT new org.am.mypotrfolio.domain.SectorInvestmentDTO(c.sector, SUM(n.investedValue), SUM(n.currentValue), SUM(n.overAllPNL)) " +
             "FROM NseStockEntity n " +
