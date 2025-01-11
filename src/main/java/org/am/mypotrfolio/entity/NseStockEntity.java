@@ -30,12 +30,6 @@ public class NseStockEntity {
     private double quantity;
     private double avePrice;
     private double investedValue;
-    private double currentValue;
-    private double ltp;
-    private double overAllPNL;
-    private double daysPNL;
-    private String daysPNLInPercentage;
-    private String overAllPNLInPercentage;
     private String isMarginTrade;
     private String userId;
     private LocalDateTime createdDate;

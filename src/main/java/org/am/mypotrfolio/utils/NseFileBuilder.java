@@ -144,26 +144,27 @@ public class NseFileBuilder {
                     if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("InvestedValue"))
                         cell.setCellValue(stock.getInvestedValue());
 
-                    if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("CurrentValue"))
-                        cell.setCellValue(stock.getCurrentValue());
-
-                    if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("LTP"))
-                        cell.setCellValue(stock.getLtp());
-
                     if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("BrokerPlateform"))
                         cell.setCellValue(stock.getBrokerPlatform());
+                    // if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("CurrentValue"))
+                    //     cell.setCellValue(stock.getCurrentValue());
 
-                    if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("Days PNL (InPercentage)"))
-                        cell.setCellValue(stock.getDaysPNLInPercentage());
+                    // if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("LTP"))
+                    //     cell.setCellValue(stock.getLtp());
 
-                    if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("Overall PNL( In Percentage)"))
-                        cell.setCellValue(stock.getOverAllPNLInPercentage());
+                    
 
-                    if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("OverAllPNL"))
-                        cell.setCellValue(stock.getOverAllPNL());
+                    // if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("Days PNL (InPercentage)"))
+                    //     cell.setCellValue(stock.getDaysPNLInPercentage());
 
-                    if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("DaysPNL"))
-                        cell.setCellValue(stock.getDaysPNL());
+                    // if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("Overall PNL( In Percentage)"))
+                    //     cell.setCellValue(stock.getOverAllPNLInPercentage());
+
+                    // if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("OverAllPNL"))
+                    //     cell.setCellValue(stock.getOverAllPNL());
+
+                    // if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("DaysPNL"))
+                    //     cell.setCellValue(stock.getDaysPNL());
 
                     if(headerRow.getCell(cellIndex).getStringCellValue().equalsIgnoreCase("MarginTrade"))
                         cell.setCellValue("Y");

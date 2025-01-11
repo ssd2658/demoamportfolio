@@ -98,13 +98,13 @@ public class PortfolioController {
         return testPortfolioService.getNseStocks(filterBy, maxCount) ;
     }
 
-    @GetMapping("/sector-investment")
-    public List<SectorInvestmentDTO> getSectorInvestment() {
-        return nseStockRepository.findTotalInvestedBySector()
-                .stream()
-                .sorted(Comparator.comparingDouble(SectorInvestmentDTO::getOverAllPNL))
-                .toList();
-    }
+    // @GetMapping("/sector-investment")
+    // public List<SectorInvestmentDTO> getSectorInvestment() {
+    //     return nseStockRepository.findTotalInvestedBySector()
+    //             .stream()
+    //             .sorted(Comparator.comparingDouble(SectorInvestmentDTO::getOverAllPNL))
+    //             .toList();
+    // }
 
     @PostMapping("/download")
     @ResponseStatus(code = HttpStatus.CREATED)

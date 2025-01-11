@@ -44,11 +44,11 @@ public class TestService {
         if(filterBy.equalsIgnoreCase("investedvalue"))
             return sortByInvestment(getAggregatedStocks());
 
-        if(filterBy.equalsIgnoreCase("currentvalue"))
-            return sortByCurrentValue(getAggregatedStocks());
+        // if(filterBy.equalsIgnoreCase("currentvalue"))
+        //     return sortByCurrentValue(getAggregatedStocks());
 
-        if(filterBy.equalsIgnoreCase("pnl"))
-            return sortByOverAllPNL(getAggregatedStocks());
+        // if(filterBy.equalsIgnoreCase("pnl"))
+        //     return sortByOverAllPNL(getAggregatedStocks());
 
         return null;
     }
@@ -67,33 +67,33 @@ public class TestService {
                 ));
     }
 
-    public Map<String, NseStock> sortByCurrentValue(Map<String, NseStock> stockMap) {
-        return stockMap.entrySet()
-                .stream()
-                // Sort by investment value in ascending order
-                .sorted(Map.Entry.comparingByValue(Comparator.comparingDouble(NseStock::getCurrentValue)))
-                // Collect the sorted entries back into a LinkedHashMap to maintain the order
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (e1, e2) -> e1, // Merge function (not needed here)
-                        LinkedHashMap::new // Use LinkedHashMap to maintain insertion order
-                ));
-    }
+    // public Map<String, NseStock> sortByCurrentValue(Map<String, NseStock> stockMap) {
+    //     return stockMap.entrySet()
+    //             .stream()
+    //             // Sort by investment value in ascending order
+    //             .sorted(Map.Entry.comparingByValue(Comparator.comparingDouble(NseStock::getCurrentValue)))
+    //             // Collect the sorted entries back into a LinkedHashMap to maintain the order
+    //             .collect(Collectors.toMap(
+    //                     Map.Entry::getKey,
+    //                     Map.Entry::getValue,
+    //                     (e1, e2) -> e1, // Merge function (not needed here)
+    //                     LinkedHashMap::new // Use LinkedHashMap to maintain insertion order
+    //             ));
+    // }
 
-    public Map<String, NseStock> sortByOverAllPNL(Map<String, NseStock> stockMap) {
-        return stockMap.entrySet()
-                .stream()
-                // Sort by investment value in ascending order
-                .sorted(Map.Entry.comparingByValue(Comparator.comparingDouble(NseStock::getOverAllPNL)))
-                // Collect the sorted entries back into a LinkedHashMap to maintain the order
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (e1, e2) -> e1, // Merge function (not needed here)
-                        LinkedHashMap::new // Use LinkedHashMap to maintain insertion order
-                ));
-    }
+    // public Map<String, NseStock> sortByOverAllPNL(Map<String, NseStock> stockMap) {
+    //     return stockMap.entrySet()
+    //             .stream()
+    //             // Sort by investment value in ascending order
+    //             .sorted(Map.Entry.comparingByValue(Comparator.comparingDouble(NseStock::getOverAllPNL)))
+    //             // Collect the sorted entries back into a LinkedHashMap to maintain the order
+    //             .collect(Collectors.toMap(
+    //                     Map.Entry::getKey,
+    //                     Map.Entry::getValue,
+    //                     (e1, e2) -> e1, // Merge function (not needed here)
+    //                     LinkedHashMap::new // Use LinkedHashMap to maintain insertion order
+    //             ));
+    // }
 
     public Map<String, NseStock> sortByQuantity(Map<String, NseStock> stockMap) {
         return stockMap.entrySet()
@@ -132,7 +132,7 @@ public class TestService {
 
         double totalQuantity = stocks.stream().mapToDouble(NseStock::getQuantity).sum();
         double totalInvestedValue = stocks.stream().mapToDouble(NseStock::getInvestedValue).sum();
-        double totalCurrentValue = stocks.stream().mapToDouble(NseStock::getCurrentValue).sum();
+        //double totalCurrentValue = stocks.stream().mapToDouble(NseStock::getCurrentValue).sum();
         double averagePrice = stocks.stream()
                 .mapToDouble(stock -> stock.getAvePrice() * stock.getQuantity())
                 .sum() / totalQuantity;
@@ -141,10 +141,10 @@ public class TestService {
         return NseStock.builder()
                 .symbol(symbol)
                 .investedValue(totalInvestedValue)
-                .currentValue(totalCurrentValue)
+                //.currentValue(totalCurrentValue)
                 .avePrice(averagePrice)
                 .quantity(totalQuantity)
-                .overAllPNL(totalCurrentValue-totalInvestedValue)
+                //.overAllPNL(totalCurrentValue-totalInvestedValue)
                 .build();
 
     }

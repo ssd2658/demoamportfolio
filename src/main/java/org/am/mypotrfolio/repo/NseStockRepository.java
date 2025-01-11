@@ -12,9 +12,9 @@ import java.util.UUID;
 @Repository
 public interface NseStockRepository extends JpaRepository<NseStockEntity, UUID> {
 
-    @Query("SELECT new org.am.mypotrfolio.domain.SectorInvestmentDTO(c.sector, SUM(n.investedValue), SUM(n.currentValue), SUM(n.overAllPNL)) " +
-            "FROM NseStockEntity n " +
-            "JOIN CompanyEntity c ON n.symbol = c.symbol " +
-            "GROUP BY c.sector")
-    List<SectorInvestmentDTO> findTotalInvestedBySector();
+    // @Query("SELECT new org.am.mypotrfolio.domain.SectorInvestmentDTO(c.sector, SUM(n.investedValue)) " +
+    //         "FROM NseStockEntity n " +
+    //         "JOIN CompanyEntity c ON n.symbol = c.symbol " +
+    //         "GROUP BY c.sector")
+    //List<SectorInvestmentDTO> findTotalInvestedBySector();
 }

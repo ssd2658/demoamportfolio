@@ -18,70 +18,47 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface PortfolioMapper {
-
     PortfolioMapper INSTANCE = Mappers.getMapper(PortfolioMapper.class);
 
     @Mapping(source = "symbol", target = "symbol")
     @Mapping(source = "quantityAvailable", target = "quantity")
     @Mapping(source = "averagePrice", target = "avePrice")
     @Mapping(expression = "java(stockInfo.getQuantityAvailable() * stockInfo.getAveragePrice())", target = "investedValue")
-    @Mapping(expression = "java(stockInfo.getQuantityAvailable() * stockInfo.getPreviousClosingPrice())", target = "currentValue")
-    @Mapping(expression = "java((stockInfo.getQuantityAvailable() * stockInfo.getPreviousClosingPrice()) - (stockInfo.getQuantityAvailable() * stockInfo.getAveragePrice()))", target = "overAllPNL")
     NseStock toNseStockFromZerodha(ZerodhaStockPortfolio stockInfo);
 
     @Mapping(source = "symbol", target = "symbol")
     @Mapping(source = "quantity", target = "quantity", qualifiedByName = "stringToDouble")
     @Mapping(source = "avgPrice", target = "avePrice", qualifiedByName = "stringToDouble")
     @Mapping(source = "investedValue", target = "investedValue", qualifiedByName = "stringToDouble")
-    @Mapping(source = "currentValue", target = "currentValue", qualifiedByName = "stringToDouble")
-    @Mapping(source = "overallPL", target = "overAllPNL", qualifiedByName = "stringToDouble")
-    @Mapping(source = "daysPL", target = "daysPNL", qualifiedByName = "stringToDouble")
     NseStock toNseStock(MStockPortfolio stockPortfolio);
 
     @Mapping(source = "name", target = "symbol", qualifiedByName = "getSymbol")
     @Mapping(source = "quantity", target = "quantity")
     @Mapping(source = "avgPrice", target = "avePrice")
     @Mapping(source = "investment", target = "investedValue")
-    @Mapping(source = "currentValue", target = "currentValue")
-    @Mapping(source = "profitLoss", target = "overAllPNL")
     NseStock mapNseStock(DhanStockPortfolio dhanStockPortfolio, @Context List<Company> companies);
 
     @Named("stringToDouble")
     default double stringToDouble(String value) {
-        if (value == null || value.isEmpty()) {
-            return 0.0;
-        }
-        return Double.parseDouble(value);
-    }
-
-    @Named("overAllPNL")
-    default double overAllPNL(String value) {
-        if (value == null || value.isEmpty()) {
-            return 0.0;
-        }
-        return Double.parseDouble(value);
+        return value == null || value.isEmpty() ? 0.0 : Double.parseDouble(value);
     }
 
     @Named("getSymbol")
-    default String getSymbol(String name, @Context List<Company> companies){
-        var company =  convertToSymbolMap(companies);
-        return findKeyByValue(company, name);
+    default String getSymbol(String name, @Context List<Company> companies) {
+        return findKeyByValue(convertToSymbolMap(companies), name);
     }
 
     default Map<String, String> convertToSymbolMap(List<Company> companies) {
         Map<String, String> symbolMap = new HashMap<>();
-        for (Company company : companies) {
-            symbolMap.put(company.getSymbol(), company.getCompanyName());
-        }
+        companies.forEach(company -> symbolMap.put(company.getSymbol(), company.getCompanyName()));
         return symbolMap;
     }
 
     default String findKeyByValue(Map<String, String> map, String value) {
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            if (entry.getValue().equals(value)) {
-                return entry.getKey();
-            }
-        }
-        return null; // Or throw an exception if no match is found
+        return map.entrySet().stream()
+                .filter(entry -> entry.getValue().equals(value))
+                .map(Map.Entry::getKey)
+                .findFirst()
+                .orElse(null);
     }
 }

@@ -149,10 +149,10 @@ public class ExcelHelper {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(symbol);  // Write symbol in the first column
             row.createCell(1).setCellValue(nseStock.getInvestedValue());  // Write company name
-            row.createCell(2).setCellValue(nseStock.getCurrentValue());  // Write sector
+            //row.createCell(2).setCellValue(nseStock.getCurrentValue());  // Write sector
             row.createCell(3).setCellValue(nseStock.getAvePrice());
             row.createCell(4).setCellValue(nseStock.getQuantity());
-            row.createCell(5).setCellValue(nseStock.getOverAllPNL());
+            //row.createCell(5).setCellValue(nseStock.getOverAllPNL());
             row.createCell(6).setCellValue(sector);
             row.createCell(7).setCellValue(companyName);
 

@@ -15,17 +15,6 @@ public class NseStock {
     private double quantity;
     private double avePrice;
     private double investedValue;
-    private double currentValue;
-    @JsonIgnore
-    private double ltp;
-    private double overAllPNL;
-
-    @JsonIgnore
-    private double daysPNL;
-    @JsonIgnore
-    private String daysPNLInPercentage;
-    @JsonIgnore
-    private String overAllPNLInPercentage;
     @JsonIgnore
     private String brokerPlatform;
     @JsonIgnore
