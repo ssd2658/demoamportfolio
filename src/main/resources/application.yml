@@ -7,12 +7,12 @@ spring:
   application:
     name: stock-data
   datasource:
-     url: jdbc:sqlserver://localhost:1433;trustServerCertificate=true
-     username: sa
-     password: "XXXXXXX"
-     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+     url: jdbc:postgresql://localhost:5432/investment
+     username: adminuser
+     password: password
+     driver-class-name: org.postgresql.Driver
   jpa:
-    database-platform: org.hibernate.dialect.SQLServerDialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
