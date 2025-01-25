@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.am.mypotrfolio.domain.Company;
 import org.am.mypotrfolio.domain.NseStock;
+import org.am.mypotrfolio.domain.NseStockDetails;
 import org.am.mypotrfolio.enums.FilterBy;
 import org.am.mypotrfolio.mapper.CompanyMapper;
 import org.am.mypotrfolio.mapper.NseStockMapper;
@@ -105,7 +106,7 @@ public class TestService {
                  .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,  LinkedHashMap::new ));
     }
 
-    public List<NseStock> getAllStocks() {
+    public List<NseStockDetails> getAllStocks() {
         return nseStockRepository.getInvestedStock().stream().toList();
     }
 

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -22,6 +23,8 @@ public class NseStock {
     private double currentValue;
     private double currentPrice;
     private double profitLoss;
+    private double openPrice;
+    private UUID id;
 
     @JsonIgnore
     private String brokerPlatform;
@@ -29,30 +32,4 @@ public class NseStock {
     private String tradeType;
     @JsonIgnore
     private String userId;
-
-    // Constructor for JPQL query
-    public NseStock(String symbol, double quantity, double avePrice, double investedValue, double currentPrice) {
-        this.symbol = symbol;
-        this.quantity = quantity;
-        this.avePrice = avePrice;
-        this.investedValue = investedValue;
-        this.currentPrice = currentPrice;
-        this.currentValue = quantity * currentPrice;
-    }
-
-    public double getTotalInvestment() {
-        return quantity * avePrice;
-    }
-
-    public double getCurrentValue() {
-        return quantity * currentPrice;
-    }
-
-    public double getCurrentPrice() {
-        return currentPrice;
-    }
-
-    public double getProfitLoss() {
-        return getCurrentValue() - getTotalInvestment();
-    }
 }
