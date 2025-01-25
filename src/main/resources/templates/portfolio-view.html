@@ -353,16 +353,71 @@
                         </div>
                     </div>
 
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span>Stock Filters</span>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="advancedFilterToggle">
+                                        <label class="form-check-label" for="advancedFilterToggle">Advanced Filters</label>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="stockNameFilter" class="form-label">Stock Symbols</label>
+                                            <select id="stockNameFilter" class="form-select" multiple="multiple">
+                                                <option th:each="stock : ${portfolioData}" 
+                                                        th:value="${stock.symbol}" 
+                                                        th:text="${stock.symbol}">
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div id="advancedFilterSection" class="col-md-6" style="display:none;">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <label for="minProfitFilter" class="form-label">Min Profit/Loss (%)</label>
+                                                    <input type="number" id="minProfitFilter" class="form-control" placeholder="Minimum %">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="maxProfitFilter" class="form-label">Max Profit/Loss (%)</label>
+                                                    <input type="number" id="maxProfitFilter" class="form-control" placeholder="Maximum %">
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-md-6">
+                                                    <label for="minInvestmentFilter" class="form-label">Min Investment</label>
+                                                    <input type="number" id="minInvestmentFilter" class="form-control" placeholder="Minimum Investment">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="maxInvestmentFilter" class="form-label">Max Investment</label>
+                                                    <input type="number" id="maxInvestmentFilter" class="form-control" placeholder="Maximum Investment">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12 mt-3">
+                                            <button id="applyStockFilter" class="btn btn-primary me-2">Apply Filter</button>
+                                            <button id="clearStockFilter" class="btn btn-secondary">Clear Filter</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="table-responsive mt-4">
                         <table id="portfolioTable" class="table table-striped table-hover">
                             <thead>
                                 <tr>
                                     <th>Stock <i class="fas fa-sort ms-2"></i></th>
+                                    <th>Total Investment <i class="fas fa-sort ms-2"></i></th>
+                                    <th>Current Value <i class="fas fa-sort ms-2"></i></th>
+                                
                                     <th>Quantity <i class="fas fa-sort ms-2"></i></th>
                                     <th>Avg Price <i class="fas fa-sort ms-2"></i></th>                              
                                     <th>Current Price <i class="fas fa-sort ms-2"></i></th>
-                                    <th>Total Investment <i class="fas fa-sort ms-2"></i></th>
-                                    <th>Current Value <i class="fas fa-sort ms-2"></i></th>
+                                    
                                     <th>Profit/Loss <i class="fas fa-sort ms-2"></i></th>
                                     <th>% Profit/Loss <i class="fas fa-sort ms-2"></i></th>
                                     <th>Return per Day <i class="fas fa-sort ms-2"></i></th>
@@ -372,11 +427,12 @@
                             <tbody>
                                 <tr th:each="stock : ${portfolioData}">
                                     <td th:text="${stock.symbol}"></td>
+                                    <td th:text="${#numbers.formatDecimal(stock.investedValue, 0, 2)}"></td>
+                                    <td th:text="${#numbers.formatDecimal(stock.currentPrice * stock.quantity, 0, 2)}"></td>
                                     <td th:text="${stock.quantity}"></td>
                                     <td th:text="${#numbers.formatDecimal(stock.avePrice, 0, 2)}"></td>
                                     <td th:text="${#numbers.formatDecimal(stock.currentPrice, 0, 2)}"></td>
-                                    <td th:text="${#numbers.formatDecimal(stock.investedValue, 0, 2)}"></td>
-                                    <td th:text="${#numbers.formatDecimal(stock.currentPrice * stock.quantity, 0, 2)}"></td>
+                        
                                     <td th:text="${#numbers.formatDecimal(stock.profitLoss >= 0 ? stock.profitLoss : -stock.profitLoss, 0, 2)}" 
                                         th:classappend="${stock.profitLoss >= 0 ? 'text-success' : 'text-danger'}"></td>
                                     <td th:text="${#numbers.formatDecimal(stock.percentChange >= 0 ? stock.percentChange : -stock.percentChange, 0, 2) + '%'}" 
@@ -401,99 +457,126 @@
     <script src="https://cdn.datatables.net/fixedheader/3.2.4/js/dataTables.fixedHeader.min.js"></script>
     <script th:inline="javascript">
         $(document).ready(function() {
-            // Custom function to handle absolute value display with color
-            function formatValueWithColor(value, isPercentage = false) {
-                const absValue = Math.abs(value);
-                const formattedValue = isPercentage 
-                    ? absValue.toFixed(2) + '%'
-                    : absValue.toFixed(2);
-                return {
-                    value: formattedValue,
-                    cssClass: value >= 0 ? 'text-success' : 'text-danger'
-                };
-            }
-            
+            // Initialize multi-select for stock names
+            $('#stockNameFilter').select2({
+                placeholder: "Select Stock Names",
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Advanced filter toggle
+            $('#advancedFilterToggle').on('change', function() {
+                $('#advancedFilterSection').toggle(this.checked);
+            });
+
+            // DataTable initialization
             var table = $('#portfolioTable').DataTable({
                 "pageLength": 50,
                 "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-                "order": [], // Remove initial sorting
+                "order": [
+                    [0, 'asc'],   // Stock Name ascending
+                    [7, 'desc'],  // Profit/Loss % descending
+                    [8, 'desc']   // Return per Day descending
+                ],
                 "columnDefs": [
                     {
-                        "targets": '_all',
-                        "orderable": true
+                        "targets": [2, 3, 4, 5, 6], // Numeric value columns
+                        "type": "numeric"
                     },
                     {
-                        "targets": [2, 3, 4, 5, 6, 7, 8, 9], // Numeric columns
-                        "type": "num",
-                        "render": function(data, type, row) {
-                            // Remove any non-numeric characters except decimal point and minus sign
-                            if (type === 'sort') {
-                                // Handle different number formats
-                                let cleanedData = data.toString()
-                                    .replace(/[₹%,]/g, '') // Remove currency and percentage symbols
-                                    .replace(/\s+/g, ''); // Remove whitespace
-                                return cleanedData;
-                            }
-                            return data;
-                        }
+                        "targets": [7, 9], // Percentage columns
+                        "type": "percentage"
                     }
-                ],
-                "language": {
-                    "sortAscending": ' <i class="fas fa-sort-up"></i>',
-                    "sortDescending": ' <i class="fas fa-sort-down"></i>',
-                    "lengthMenu": "Show _MENU_ entries",
-                    "search": "Global Search:",
-                    "searchPlaceholder": "Search all columns..."
-                },
-                "search": {
-                    "smart": true,
-                    "caseInsensitive": true,
-                    "regex": true
-                },
-                // Scroll configuration
-                "scrollY": "600px",
-                "scrollCollapse": true,
-                "fixedHeader": {
-                    header: true,
-                    footer: false
-                },
-                "scrollX": true
+                ]
             });
 
-            // Ensure header is always visible
-            function fixTableHeader() {
-                var $thead = $('#portfolioTable thead');
-                var $portfolioOverview = $('.portfolio-overview');
+            // Stock name and advanced filtering functionality
+            function applyFilters() {
+                // Reset previous custom search
+                $.fn.dataTable.ext.search.length = 0;
+
+                // Stock Symbol Filter
+                var selectedStocks = $('#stockNameFilter').val() || [];
                 
-                // Calculate top position based on portfolio insights
-                var topPosition = $portfolioOverview.outerHeight() + 20;
-                
-                $thead.css({
-                    'position': 'sticky',
-                    'top': `${topPosition}px`,
-                    'z-index': 1040,
-                    'background-color': '#f8f9fa'
-                });
+                // Advanced Filter Conditions
+                var minProfit = parseFloat($('#minProfitFilter').val()) || -Infinity;
+                var maxProfit = parseFloat($('#maxProfitFilter').val()) || Infinity;
+                var minInvestment = parseFloat($('#minInvestmentFilter').val()) || 0;
+                var maxInvestment = parseFloat($('#maxInvestmentFilter').val()) || Infinity;
+
+                // Custom filter function
+                $.fn.dataTable.ext.search.push(
+                    function(settings, data) {
+                        // Stock Symbol Check
+                        var stockSymbol = data[0];
+                        var symbolMatch = selectedStocks.length === 0 || 
+                            selectedStocks.includes(stockSymbol);
+
+                        // Percentage Change Check
+                        var percentChange = parseFloat(data[7].replace('%', '')) || 0;
+                        var percentageMatch = percentChange >= minProfit && 
+                            percentChange <= maxProfit;
+
+                        // Investment Check
+                        var investedValue = parseFloat(data[4]) || 0;
+                        var investmentMatch = investedValue >= minInvestment && 
+                            investedValue <= maxInvestment;
+
+                        // Combine all conditions
+                        return symbolMatch && 
+                            (minProfit !== -Infinity || maxProfit !== Infinity ? percentageMatch : true) &&
+                            (minInvestment !== 0 || maxInvestment !== Infinity ? investmentMatch : true);
+                    }
+                );
+
+                // Redraw the table with new filters
+                table.draw();
             }
 
-            // Initial and resize header fixing
-            fixTableHeader();
-            $(window).on('resize', fixTableHeader);
+            // Apply filter button
+            $('#applyStockFilter').on('click', applyFilters);
+
+            // Clear filter button
+            $('#clearStockFilter').on('click', function() {
+                // Clear all inputs
+                $('#stockNameFilter').val(null).trigger('change');
+                $('#minProfitFilter, #maxProfitFilter, #minInvestmentFilter, #maxInvestmentFilter').val('');
+                
+                // Reset advanced filter toggle
+                $('#advancedFilterToggle').prop('checked', false);
+                $('#advancedFilterSection').hide();
+
+                // Clear all custom searches
+                $.fn.dataTable.ext.search.length = 0;
+                
+                // Redraw the table
+                table.draw();
+            });
         });
     </script>
 
     <style>
-        /* Sorting icon styling */
-        .sort-icon {
-            margin-left: 10px;
-            opacity: 0.5;
-            transition: opacity 0.3s ease;
+        /* Advanced filter styling */
+        #advancedFilterSection input {
+            width: 100%;
         }
-        #portfolioTable thead th:hover .sort-icon {
-            opacity: 1;
+        .form-check-input {
+            cursor: pointer;
         }
-        .sort-icon .fas {
-            font-size: 0.8em;
+    </style>
+
+    <!-- Add Select2 CSS and JS for enhanced multi-select -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <style>
+        /* Custom styling for stock filter */
+        .select2-container {
+            width: 100% !important;
+        }
+        .select2-selection--multiple {
+            overflow-y: auto;
+            max-height: 200px;
         }
     </style>
 </body>
