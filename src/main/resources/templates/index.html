@@ -3,37 +3,110 @@
 <head>
     <title>Investment Portfolio Manager</title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Arial', sans-serif;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+        }
+        .feature-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+        .feature-card .card-header {
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            padding: 15px;
+        }
+        .feature-card .card-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+        .btn-custom {
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            transform: scale(1.05);
+        }
+    </style>
 </head>
 <body>
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="display-4 mb-4">
+                <i class="fas fa-chart-line me-3"></i>Investment Portfolio Manager
+            </h1>
+            <p class="lead mb-5">Manage, Track, and Optimize Your Investments</p>
+        </div>
+    </section>
+
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Investment Portfolio Manager</h1>
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <div class="card">
+        <div class="row justify-content-center">
+            <div class="col-md-5 mb-4">
+                <div class="card feature-card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-eye me-2"></i>View Portfolio
+                        </h3>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title">Dhan Portfolio</h5>
-                        <a href="/upload" class="btn btn-primary">Upload Dhan Portfolio</a>
+                        <p class="card-text flex-grow-1">
+                            Dive deep into your investment portfolio. Analyze performance, track gains and losses, 
+                            and get comprehensive insights into your financial journey.
+                        </p>
+                        <a href="/view-portfolio" class="btn btn-primary btn-custom mt-3 w-100">
+                            <i class="fas fa-chart-pie me-2"></i>View Portfolio
+                        </a>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 mb-3">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">MStock Portfolio</h5>
-                        <a href="/upload" class="btn btn-success">Upload MStock Portfolio</a>
+            
+            <div class="col-md-5 mb-4">
+                <div class="card feature-card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-upload me-2"></i>Upload Portfolio
+                        </h3>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Zerodha Portfolio</h5>
-                        <a href="/upload" class="btn btn-info">Upload Zerodha Portfolio</a>
+                        <form th:action="@{/upload-portfolio}" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="platform" class="form-label">Select Platform</label>
+                                <select id="platform" name="platform" class="form-select" required>
+                                    <option value="">Choose Platform</option>
+                                    <option value="dhan">Dhan</option>
+                                    <option value="mstock">MStock</option>
+                                    <option value="zerodha">Zerodha</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="portfolioFile" class="form-label">Upload Portfolio File</label>
+                                <input type="file" class="form-control" id="portfolioFile" name="file" required>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-custom w-100">
+                                <i class="fas fa-cloud-upload-alt me-2"></i>Upload Portfolio
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
     <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
 </body>
 </html>

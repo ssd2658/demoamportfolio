@@ -105,6 +105,12 @@ public class TestService {
                  .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1,  LinkedHashMap::new ));
     }
 
+    public List<NseStock> getAllStocks() {
+        return nseStockRepository.findAll().stream()
+                .map(NseStockMapper.INSTANCE::mapNseStock)
+                .toList();
+    }
+
     private NseStock aggregateStocks(List<NseStock> stocks) {
         String symbol = stocks.get(0).getSymbol();
         //String brokerPlatform = stocks.get(0).getBrokerPlatform();

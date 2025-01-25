@@ -1,7 +1,15 @@
 package org.am.mypotrfolio.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Collections;
+
+import org.am.mypotrfolio.domain.NseStock;
+import org.am.mypotrfolio.enums.FilterBy;
 import org.am.mypotrfolio.service.DhanService;
 import org.am.mypotrfolio.service.MStockService;
+import org.am.mypotrfolio.service.TestService;
 import org.am.mypotrfolio.service.ZerodhaService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +29,7 @@ public class WebController {
     private final DhanService dhanService;
     private final MStockService mStockService;
     private final ZerodhaService zerodhaService;
+    private final TestService testPortfolioService;
 
     @GetMapping({"/", "/home"})
     public String home() {
@@ -76,6 +85,79 @@ public class WebController {
             log.error("Error uploading Zerodha portfolio", e);
             model.addAttribute("error", "Failed to upload Zerodha portfolio: " + e.getMessage());
             return "error";
+        }
+    }
+
+    @PostMapping("/upload-portfolio")
+    public String uploadPortfolio(@RequestParam("platform") String platform,
+                                  @RequestParam("file") MultipartFile file,
+                                  Model model) {
+        try {
+            switch (platform.toLowerCase()) {
+                case "dhan":
+                    return uploadDhanPortfolio(file, model);
+                case "mstock":
+                    return uploadMStockPortfolio(file, model);
+                case "zerodha":
+                    return uploadZerodhaPortfolio(file, model);
+                default:
+                    model.addAttribute("error", "Invalid platform selected");
+                    return "error";
+            }
+        } catch (Exception e) {
+            log.error("Error uploading portfolio", e);
+            model.addAttribute("error", "Failed to upload portfolio: " + e.getMessage());
+            return "error";
+        }
+    }
+
+    @GetMapping("/view-portfolio")
+    public String viewPortfolio(Model model) {
+        try {
+            // Fetch portfolio data from a service
+            List<NseStock> portfolioData = testPortfolioService.getAllStocks();
+            
+            if (portfolioData == null || portfolioData.isEmpty()) {
+                // No data scenario
+                model.addAttribute("portfolioData", Collections.emptyList());
+                return "portfolio-view";
+            }
+
+            // Set a default current price (same as average price for now)
+            portfolioData.forEach(stock -> {
+                try {
+                    // Use reflection to set currentPrice
+                    java.lang.reflect.Field currentPriceField = NseStock.class.getDeclaredField("currentPrice");
+                    currentPriceField.setAccessible(true);
+                    currentPriceField.set(stock, stock.getAvePrice());
+                } catch (Exception e) {
+                    // Log or handle exception if needed
+                }
+            });
+
+            // Calculate summary metrics
+            double totalInvestment = portfolioData.stream()
+                .mapToDouble(NseStock::getTotalInvestment)
+                .sum();
+
+            double currentValue = portfolioData.stream()
+                .mapToDouble(NseStock::getCurrentValue)
+                .sum();
+
+            double profitLoss = currentValue - totalInvestment;
+
+            // Add attributes for view
+            model.addAttribute("portfolioData", portfolioData);
+            model.addAttribute("totalInvestment", totalInvestment);
+            model.addAttribute("currentValue", currentValue);
+            model.addAttribute("profitLoss", profitLoss);
+
+            return "portfolio-view";
+        } catch (Exception e) {
+            log.error("Error fetching portfolio data", e);
+            model.addAttribute("error", "Unable to fetch portfolio data. Please try again.");
+            model.addAttribute("portfolioData", Collections.emptyList());
+            return "portfolio-view";
         }
     }
 }
