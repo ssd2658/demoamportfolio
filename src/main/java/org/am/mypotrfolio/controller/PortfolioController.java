@@ -12,6 +12,7 @@ import org.am.mypotrfolio.entity.NseStockEntity;
 // import org.am.mypotrfolio.exceptions.ApiValidationError;
 // import org.am.mypotrfolio.exceptions.BadRequestException;
 
+import org.am.mypotrfolio.enums.FilterBy;
 import org.am.mypotrfolio.model.Constant;
 import org.am.mypotrfolio.repo.NseStockRepository;
 import org.am.mypotrfolio.service.CompanyMasterData;
@@ -29,6 +30,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,7 +45,16 @@ import java.util.Map;
 
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
+@RequestMapping("/api/portfolio")
+@Tag(name = "Portfolio Management", description = "APIs for managing investment portfolios across different platforms")
 @Slf4j
 @RequiredArgsConstructor
 public class PortfolioController {
@@ -63,51 +74,164 @@ public class PortfolioController {
     private final TestService testService;
     private final MutualFundService mutualFundService;
 
-    @PostMapping(path = "/dhan")
+    @PostMapping("/dhan")
+    @Operation(
+        summary = "Upload Dhan Portfolio",
+        description = "Upload a portfolio file from Dhan trading platform",
+        tags = {"Portfolio Upload"},
+        responses = {
+            @ApiResponse(
+                responseCode = "201", 
+                description = "Portfolio uploaded successfully", 
+                content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                responseCode = "400", 
+                description = "Invalid file format", 
+                content = @Content(mediaType = "application/json")
+            )
+        }
+    )
     @ResponseStatus(code = HttpStatus.CREATED)
-    public Flux<List<NseStock>> dhan(@RequestParam("file") MultipartFile file) throws IOException {
-        // if (file.isEmpty()) {
-        //   return Mono.defer(() -> Mono.error(new BadRequestException("Bad")));
-        // }
+    public Flux<List<NseStock>> dhan(
+        @Parameter(
+            description = "Portfolio file from Dhan platform", 
+            required = true, 
+            content = @Content(mediaType = "multipart/form-data")
+        ) @RequestParam("file") MultipartFile file) throws IOException {
         return Flux.just(dhanPortfolioService.processNseStock(file));
     }
 
-    @PostMapping(path = "/mstock")
+    @PostMapping("/mstock")
+    @Operation(
+        summary = "Upload MStock Portfolio",
+        description = "Upload a portfolio file from MStock trading platform",
+        tags = {"Portfolio Upload"},
+        responses = {
+            @ApiResponse(
+                responseCode = "201", 
+                description = "Portfolio uploaded successfully", 
+                content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                responseCode = "400", 
+                description = "Invalid file format", 
+                content = @Content(mediaType = "application/json")
+            )
+        }
+    )
     @ResponseStatus(code = HttpStatus.CREATED)
-    public Flux<List<NseStock>> mstock(@RequestParam("file") MultipartFile file) throws IOException {
+    public Flux<List<NseStock>> mstock(
+        @Parameter(
+            description = "Portfolio file from MStock platform", 
+            required = true, 
+            content = @Content(mediaType = "multipart/form-data")
+        ) @RequestParam("file") MultipartFile file) throws IOException {
         return Flux.just(mStockPortfolioService.processNseStock(file));
     }
 
-    @PostMapping(path = "/zerodha")
+    @PostMapping("/zerodha")
+    @Operation(
+        summary = "Upload Zerodha Portfolio",
+        description = "Upload a portfolio file from Zerodha trading platform",
+        tags = {"Portfolio Upload"},
+        responses = {
+            @ApiResponse(
+                responseCode = "201", 
+                description = "Portfolio uploaded successfully", 
+                content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                responseCode = "400", 
+                description = "Invalid file format", 
+                content = @Content(mediaType = "application/json")
+            )
+        }
+    )
     @ResponseStatus(code = HttpStatus.CREATED)
-    public Flux<List<NseStock>> zerodha(@RequestParam("file") MultipartFile file) throws IOException {
+    public Flux<List<NseStock>> zerodha(
+        @Parameter(
+            description = "Portfolio file from Zerodha platform", 
+            required = true, 
+            content = @Content(mediaType = "multipart/form-data")
+        ) @RequestParam("file") MultipartFile file) throws IOException {
         return Flux.just(zerodhaPortfolioService.processNseStock(file));
     }
 
-    @PostMapping(path = "/test")
+    @PostMapping("/test")
+    @Operation(
+        summary = "Test Portfolio Upload",
+        description = "Test portfolio upload with a sample file",
+        tags = {"Portfolio Upload"},
+        responses = {
+            @ApiResponse(
+                responseCode = "201", 
+                description = "Portfolio uploaded successfully", 
+                content = @Content(mediaType = "application/json")
+            ),
+            @ApiResponse(
+                responseCode = "400", 
+                description = "Invalid file format", 
+                content = @Content(mediaType = "application/json")
+            )
+        }
+    )
     @ResponseStatus(code = HttpStatus.CREATED)
-    public void test(@RequestParam("file") MultipartFile file) throws IOException {
+    public void test(
+        @Parameter(
+            description = "Portfolio file for testing", 
+            required = true, 
+            content = @Content(mediaType = "multipart/form-data")
+        ) @RequestParam("file") MultipartFile file) throws IOException {
         companyMasterData.processCompanyRecords("Company") ;
     }
 
-    @GetMapping(path = "/portfolio")
+    @GetMapping("/portfolio")
+    @Operation(
+        summary = "Retrieve Portfolio",
+        description = "Retrieve portfolio with optional filtering",
+        tags = {"Portfolio Retrieval"},
+        responses = {
+            @ApiResponse(
+                responseCode = "200", 
+                description = "Portfolio retrieved successfully", 
+                content = @Content(
+                    mediaType = "application/json", 
+                    schema = @Schema(implementation = Map.class)
+                )
+            )
+        }
+    )
     public Map<String,NseStock> portfolio(
-            @RequestParam("filterBy") String filterBy,
-            @RequestParam("maxCount") Integer maxCount
+        @Parameter(
+            description = "Filter criteria for portfolio", 
+            required = true,
+            schema = @Schema(
+                type = "string",
+                implementation = FilterBy.class,
+                allowableValues = {"QUANTITY", "SYMBOL", "INVESTED_VALUE"}
+            )
+        ) @RequestParam("filterBy") FilterBy filterBy,
+        @Parameter(description = "Maximum number of records to return") 
+        @RequestParam("maxCount") Integer maxCount
     ) {
-        return testPortfolioService.getNseStocks(filterBy, maxCount) ;
+        return testPortfolioService.getNseStocks(filterBy, maxCount);
     }
 
-    // @GetMapping("/sector-investment")
-    // public List<SectorInvestmentDTO> getSectorInvestment() {
-    //     return nseStockRepository.findTotalInvestedBySector()
-    //             .stream()
-    //             .sorted(Comparator.comparingDouble(SectorInvestmentDTO::getOverAllPNL))
-    //             .toList();
-    // }
-
     @PostMapping("/download")
-    @ResponseStatus(code = HttpStatus.CREATED)
+    @Operation(
+        summary = "Download Routing List",
+        description = "Download routing list as an Excel file",
+        tags = {"File Download"},
+        responses = {
+            @ApiResponse(
+                responseCode = "200", 
+                description = "Routing list downloaded successfully", 
+                content = @Content(mediaType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            )
+        }
+    )
+    @ResponseStatus(code = HttpStatus.OK)
     public ResponseEntity<ByteArrayResource> download() throws IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.add(CONTENT_DISPOSITION, Constant.ATTACHMENT_FILENAME_COMPANY_TEMPLATE_XLSX + Constant.EXCEL_FILENAME);
@@ -115,7 +239,19 @@ public class PortfolioController {
     }
 
     @PostMapping("/download-portfolio")
-    @ResponseStatus(code = HttpStatus.CREATED)
+    @Operation(
+        summary = "Download Portfolio List",
+        description = "Download portfolio list as an Excel file",
+        tags = {"File Download"},
+        responses = {
+            @ApiResponse(
+                responseCode = "200", 
+                description = "Portfolio list downloaded successfully", 
+                content = @Content(mediaType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            )
+        }
+    )
+    @ResponseStatus(code = HttpStatus.OK)
     public ResponseEntity<ByteArrayResource> downloadPortfolio() throws IOException {
         HttpHeaders headers = new HttpHeaders();
         headers.add(CONTENT_DISPOSITION, Constant.ATTACHMENT_FILENAME_COMPANY_TEMPLATE_XLSX + Constant.EXCEL_PORTFOLIO_FILENAME);
@@ -123,23 +259,22 @@ public class PortfolioController {
     }
 
     @PostMapping("/upload-mutualcompany-data/{path}")
+    @Operation(
+        summary = "Upload Mutual Company Data",
+        description = "Upload mutual company data from a file",
+        tags = {"File Upload"},
+        responses = {
+            @ApiResponse(
+                responseCode = "201", 
+                description = "Mutual company data uploaded successfully"
+            )
+        }
+    )
     @ResponseStatus(code = HttpStatus.CREATED)
-    public void UploadPortfolio(@PathVariable("path") String path) {
+    public void UploadPortfolio(
+        @Parameter(description = "File path for mutual company data") 
+        @PathVariable("path") String path
+    ) {
         mutualFundService.uploadMutualFundFiles(path);
     }
-
-    // private ApiSubError buildApiValidationError(String fieldName,String rejectedValue, String message,String errorCode) {
-    //     return new ApiValidationError(fieldName, rejectedValue, message);
-    // }
-
-    // private RuntimeException buildApiValidationError(String value, String code, String errorMessage) {
-    // ApiSubError apiSubError = new ApiValidationError(null, value, errorMessage);
-    
-    // if (HttpStatusCode.valueOf(code).equals(HttpStatusCode)) {
-    //     return new AccessDeniedException(BookingDataValidation.FORBIDDEN_ERROR_MESSAGE);
-    // } else {
-    //     return new BadRequestException(null, new ArrayList<>(List.of(apiSubError)), BOOKING_DATA_ERROR);
-    // }
-    //}
-
 }

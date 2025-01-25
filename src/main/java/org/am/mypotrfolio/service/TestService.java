@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.am.mypotrfolio.domain.Company;
 import org.am.mypotrfolio.domain.NseStock;
+import org.am.mypotrfolio.enums.FilterBy;
 import org.am.mypotrfolio.mapper.CompanyMapper;
 import org.am.mypotrfolio.mapper.NseStockMapper;
 import org.am.mypotrfolio.repo.CompanyRepository;
@@ -21,6 +22,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.am.mypotrfolio.model.Constant.AMPORTFOLIO_FILE;
@@ -34,23 +36,28 @@ public class TestService {
     private final ExcelHelper excelHelper;
 
 
-    public Map<String, NseStock> getNseStocks(String filterBy,  int limit) {
-        if(filterBy.equalsIgnoreCase("quantity"))
-            return sortByQuantity(getAggregatedStocks());
+    public Map<String, NseStock> getNseStocks(FilterBy filterBy, Integer maxCount) {
+        // Fetch stocks based on the filter
+        List<NseStock> stocks = nseStockRepository.findAll().stream()
+                .map(NseStockMapper.INSTANCE::mapNseStock)
+                .toList();
 
-        if(filterBy.equalsIgnoreCase("symbol"))
-            return getAggregatedStocks();
+        // Sort and limit stocks based on the filter
+        Comparator<NseStock> comparator = switch (filterBy) {
+            case QUANTITY -> Comparator.comparing(NseStock::getQuantity).reversed();
+            case SYMBOL -> Comparator.comparing(NseStock::getSymbol);
+            case INVESTED_VALUE -> Comparator.comparing(NseStock::getInvestedValue).reversed();
+        };
 
-        if(filterBy.equalsIgnoreCase("investedvalue"))
-            return sortByInvestment(getAggregatedStocks());
-
-        // if(filterBy.equalsIgnoreCase("currentvalue"))
-        //     return sortByCurrentValue(getAggregatedStocks());
-
-        // if(filterBy.equalsIgnoreCase("pnl"))
-        //     return sortByOverAllPNL(getAggregatedStocks());
-
-        return null;
+        return stocks.stream()
+            .sorted(comparator)
+            .limit(maxCount)
+            .collect(Collectors.toMap(
+                NseStock::getSymbol, 
+                Function.identity(), 
+                (v1, v2) -> v1, 
+                LinkedHashMap::new
+            ));
     }
 
     public Map<String, NseStock> sortByInvestment(Map<String, NseStock> stockMap) {
@@ -66,34 +73,6 @@ public class TestService {
                         LinkedHashMap::new // Use LinkedHashMap to maintain insertion order
                 ));
     }
-
-    // public Map<String, NseStock> sortByCurrentValue(Map<String, NseStock> stockMap) {
-    //     return stockMap.entrySet()
-    //             .stream()
-    //             // Sort by investment value in ascending order
-    //             .sorted(Map.Entry.comparingByValue(Comparator.comparingDouble(NseStock::getCurrentValue)))
-    //             // Collect the sorted entries back into a LinkedHashMap to maintain the order
-    //             .collect(Collectors.toMap(
-    //                     Map.Entry::getKey,
-    //                     Map.Entry::getValue,
-    //                     (e1, e2) -> e1, // Merge function (not needed here)
-    //                     LinkedHashMap::new // Use LinkedHashMap to maintain insertion order
-    //             ));
-    // }
-
-    // public Map<String, NseStock> sortByOverAllPNL(Map<String, NseStock> stockMap) {
-    //     return stockMap.entrySet()
-    //             .stream()
-    //             // Sort by investment value in ascending order
-    //             .sorted(Map.Entry.comparingByValue(Comparator.comparingDouble(NseStock::getOverAllPNL)))
-    //             // Collect the sorted entries back into a LinkedHashMap to maintain the order
-    //             .collect(Collectors.toMap(
-    //                     Map.Entry::getKey,
-    //                     Map.Entry::getValue,
-    //                     (e1, e2) -> e1, // Merge function (not needed here)
-    //                     LinkedHashMap::new // Use LinkedHashMap to maintain insertion order
-    //             ));
-    // }
 
     public Map<String, NseStock> sortByQuantity(Map<String, NseStock> stockMap) {
         return stockMap.entrySet()

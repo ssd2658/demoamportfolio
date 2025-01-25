@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${error} ?: 'Error'">Error</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="alert alert-danger text-center" role="alert">
+            <h1 th:text="${error} ?: 'Oops! Something went wrong'"></h1>
+            <p th:text="${message} ?: 'An unexpected error occurred'"></p>
+        </div>
+        <div class="text-center mt-3">
+            <a href="/" class="btn btn-primary">Go to Home</a>
+        </div>
+    </div>
+    <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
