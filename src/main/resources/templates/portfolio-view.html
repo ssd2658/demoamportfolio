@@ -305,8 +305,8 @@
                             <div class="summary-card">
                                 <h5 class="card-title">Current Portfolio Value</h5>
                                 <p class="card-text" 
-                                   th:text="${#numbers.formatDecimal(currentPortfolioValue, 0, 2)}"
-                                   th:classappend="${currentPortfolioValue >= totalInvestment ? 'positive' : 'negative'}">
+                                   th:text="${#numbers.formatDecimal(currentPortfolioValue >= 0 ? currentPortfolioValue : -currentPortfolioValue, 0, 2)}"
+                                   th:classappend="${currentPortfolioValue >= totalInvestment ? 'text-success' : 'text-danger'}">
                                     0.00
                                 </p>
                             </div>
@@ -315,7 +315,7 @@
                             <div class="summary-card">
                                 <h5 class="card-title">Total Profit/Loss</h5>
                                 <p class="card-text" 
-                                   th:text="${#numbers.formatDecimal(totalProfitLoss, 0, 2)}"
+                                   th:text="${#numbers.formatDecimal(totalProfitLoss >= 0 ? totalProfitLoss : -totalProfitLoss, 0, 2)}"
                                    th:classappend="${totalProfitLoss >= 0 ? 'text-success' : 'text-danger'}">
                                     0.00
                                 </p>
@@ -325,7 +325,7 @@
                             <div class="summary-card">
                                 <h5 class="card-title">% Total Profit/Loss</h5>
                                 <p class="card-text" 
-                                   th:text="${#numbers.formatDecimal(totalPercentChange, 0, 2) + '%'}"
+                                   th:text="${#numbers.formatDecimal(totalPercentChange >= 0 ? totalPercentChange : -totalPercentChange, 0, 2) + '%'}"
                                    th:classappend="${totalPercentChange >= 0 ? 'text-success' : 'text-danger'}">
                                     0.00%
                                 </p>
@@ -335,8 +335,8 @@
                             <div class="summary-card">
                                 <h5 class="card-title">Return per Day</h5>
                                 <p class="card-text" 
-                                   th:text="${#numbers.formatDecimal(dailyReturnChange, 0, 2)}"
-                                   th:classappend="${dailyReturnChange >= 0 ? 'positive' : 'negative'}">
+                                   th:text="${#numbers.formatDecimal(dailyReturnChange >= 0 ? dailyReturnChange : -dailyReturnChange, 0, 2)}"
+                                   th:classappend="${dailyReturnChange >= 0 ? 'text-success' : 'text-danger'}">
                                     0.00
                                 </p>
                             </div>
@@ -345,7 +345,7 @@
                             <div class="summary-card">
                                 <h5 class="card-title">Return per Day (%)</h5>
                                 <p class="card-text" 
-                                   th:text="${#numbers.formatDecimal(dailyReturnChange / totalInvestment * 100, 0, 2) + '%'}"
+                                   th:text="${#numbers.formatDecimal((dailyReturnChange / totalInvestment * 100) >= 0 ? (dailyReturnChange / totalInvestment * 100) : -(dailyReturnChange / totalInvestment * 100), 0, 2) + '%'}"
                                    th:classappend="${dailyReturnChange >= 0 ? 'text-success' : 'text-danger'}">
                                     0.00%
                                 </p>
@@ -377,13 +377,13 @@
                                     <td th:text="${#numbers.formatDecimal(stock.currentPrice, 0, 2)}"></td>
                                     <td th:text="${#numbers.formatDecimal(stock.investedValue, 0, 2)}"></td>
                                     <td th:text="${#numbers.formatDecimal(stock.currentPrice * stock.quantity, 0, 2)}"></td>
-                                    <td th:text="${#numbers.formatDecimal(stock.profitLoss, 0, 2)}" 
+                                    <td th:text="${#numbers.formatDecimal(stock.profitLoss >= 0 ? stock.profitLoss : -stock.profitLoss, 0, 2)}" 
                                         th:classappend="${stock.profitLoss >= 0 ? 'text-success' : 'text-danger'}"></td>
-                                    <td th:text="${#numbers.formatDecimal(stock.percentChange, 0, 2) + '%'}" 
+                                    <td th:text="${#numbers.formatDecimal(stock.percentChange >= 0 ? stock.percentChange : -stock.percentChange, 0, 2) + '%'}" 
                                         th:classappend="${stock.percentChange >= 0 ? 'text-success' : 'text-danger'}"></td>
-                                    <td th:text="${#numbers.formatDecimal(stock.returnChange, 0, 2)}" 
+                                    <td th:text="${#numbers.formatDecimal(stock.returnChange >= 0 ? stock.returnChange : -stock.returnChange, 0, 2)}" 
                                         th:classappend="${stock.returnChange >= 0 ? 'text-success' : 'text-danger'}"></td>
-                                    <td th:text="${#numbers.formatDecimal(stock.returnChange / stock.investedValue * 100, 0, 2) + '%'}" 
+                                    <td th:text="${#numbers.formatDecimal((stock.returnChange / stock.investedValue * 100) >= 0 ? (stock.returnChange / stock.investedValue * 100) : -(stock.returnChange / stock.investedValue * 100), 0, 2) + '%'}" 
                                         th:classappend="${stock.returnChange >= 0 ? 'text-success' : 'text-danger'}"></td>
                                 </tr>
                             </tbody>
@@ -401,17 +401,22 @@
     <script src="https://cdn.datatables.net/fixedheader/3.2.4/js/dataTables.fixedHeader.min.js"></script>
     <script th:inline="javascript">
         $(document).ready(function() {
-            // Define default sort order for specific columns
-            var defaultSortOrder = [
-                [0, 'asc'],   // First column (e.g., Stock Name) ascending
-                [7, 'desc'],  // Profit/Loss column descending
-                [8, 'desc']   // Percentage Change column descending
-            ];
-
+            // Custom function to handle absolute value display with color
+            function formatValueWithColor(value, isPercentage = false) {
+                const absValue = Math.abs(value);
+                const formattedValue = isPercentage 
+                    ? absValue.toFixed(2) + '%'
+                    : absValue.toFixed(2);
+                return {
+                    value: formattedValue,
+                    cssClass: value >= 0 ? 'text-success' : 'text-danger'
+                };
+            }
+            
             var table = $('#portfolioTable').DataTable({
                 "pageLength": 50,
                 "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-                "order": defaultSortOrder, // Set default sort order
+                "order": [], // Remove initial sorting
                 "columnDefs": [
                     {
                         "targets": '_all',
@@ -474,60 +479,6 @@
             // Initial and resize header fixing
             fixTableHeader();
             $(window).on('resize', fixTableHeader);
-
-            // Add sorting indicators to all sortable columns
-            $('#portfolioTable thead th').each(function(index) {
-                $(this).attr('data-column-index', index)
-                    .append('<span class="sort-icon"><i class="fas fa-sort"></i></span>');
-            });
-
-            // Custom sorting for specific columns
-            table.on('order.dt', function() {
-                table.columns().every(function(index) {
-                    var column = this;
-                    var header = $(column.header());
-                    var sortIcon = header.find('.sort-icon i');
-                    
-                    // Reset all icons
-                    sortIcon.removeClass('fa-sort-up fa-sort-down').addClass('fa-sort');
-                    
-                    // Update current column's icon
-                    var orderClasses = table.order();
-                    if (orderClasses.length > 0) {
-                        orderClasses.forEach(function(orderInfo) {
-                            if (orderInfo[0] === index) {
-                                if (orderInfo[1] === 'asc') {
-                                    sortIcon.removeClass('fa-sort fa-sort-down').addClass('fa-sort-up');
-                                } else {
-                                    sortIcon.removeClass('fa-sort fa-sort-up').addClass('fa-sort-down');
-                                }
-                            }
-                        });
-                    }
-                });
-            });
-
-            // Enable multi-column sorting
-            $('#portfolioTable thead th').on('click', function(e) {
-                // Check if Shift key is pressed for multi-column sorting
-                if (e.shiftKey) {
-                    // Allow multi-column sorting
-                    return true;
-                }
-                
-                // Default single column sorting behavior
-                var columnIndex = $(this).data('column-index');
-                var currentOrder = table.order();
-                var newOrder = 'asc';
-
-                // Determine new sort order
-                if (currentOrder.length > 0 && currentOrder[0][0] === columnIndex) {
-                    newOrder = currentOrder[0][1] === 'asc' ? 'desc' : 'asc';
-                }
-
-                // Apply new sort order
-                table.order([[columnIndex, newOrder]]).draw();
-            });
         });
     </script>
 
