@@ -123,17 +123,17 @@ public class WebController {
                 return "portfolio-view";
             }
 
-            // Set a default current price (same as average price for now)
-            portfolioData.forEach(stock -> {
-                try {
-                    // Use reflection to set currentPrice
-                    java.lang.reflect.Field currentPriceField = NseStock.class.getDeclaredField("currentPrice");
-                    currentPriceField.setAccessible(true);
-                    currentPriceField.set(stock, stock.getAvePrice());
-                } catch (Exception e) {
-                    // Log or handle exception if needed
-                }
-            });
+            // // Set a default current price (same as average price for now)
+            // portfolioData.forEach(stock -> {
+            //     try {
+            //         // Use reflection to set currentPrice
+            //         java.lang.reflect.Field currentPriceField = NseStock.class.getDeclaredField("currentPrice");
+            //         currentPriceField.setAccessible(true);
+            //         currentPriceField.set(stock, stock.getAvePrice());
+            //     } catch (Exception e) {
+            //         // Log or handle exception if needed
+            //     }
+            // });
 
             // Calculate summary metrics
             double totalInvestment = portfolioData.stream()

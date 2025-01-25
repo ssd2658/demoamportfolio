@@ -118,11 +118,11 @@
                                         <tr th:each="stock : ${portfolioData}">
                                             <td th:text="${stock.symbol}"></td>
                                             <td th:text="${stock.quantity}"></td>
-                                            <td th:text="${stock.buyPrice}"></td>
+                                            <td th:text="${stock.avePrice}"></td>
                                             <td th:text="${stock.currentPrice}"></td>
                                             <td th:text="${stock.totalInvestment}"></td>
                                             <td th:text="${stock.currentValue}"></td>
-                                            <td th:classappend="${stock.profitLoss >= 0 ? 'positive' : 'negative'}"
+                                            <td th:classappend="${stock.currentPrice >= stock.avePrice ? 'positive' : 'negative'}"
                                                 th:text="${stock.profitLoss}"></td>
                                         </tr>
                                     </tbody>

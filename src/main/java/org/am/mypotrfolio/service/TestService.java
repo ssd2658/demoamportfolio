@@ -106,9 +106,7 @@ public class TestService {
     }
 
     public List<NseStock> getAllStocks() {
-        return nseStockRepository.findAll().stream()
-                .map(NseStockMapper.INSTANCE::mapNseStock)
-                .toList();
+        return nseStockRepository.getInvestedStock().stream().toList();
     }
 
     private NseStock aggregateStocks(List<NseStock> stocks) {

@@ -15,7 +15,7 @@ import org.am.mypotrfolio.entity.NseStockEntity;
 import org.am.mypotrfolio.enums.FilterBy;
 import org.am.mypotrfolio.model.Constant;
 import org.am.mypotrfolio.repo.NseStockRepository;
-import org.am.mypotrfolio.service.CompanyMasterData;
+//import org.am.mypotrfolio.service.CompanyMasterData;
 import org.am.mypotrfolio.service.DhanService;
 import org.am.mypotrfolio.service.MStockService;
 import org.am.mypotrfolio.service.MutualFundService;
@@ -68,7 +68,7 @@ public class PortfolioController {
 
     private final TestService testPortfolioService;
 
-    private final CompanyMasterData companyMasterData;
+    //private final CompanyMasterData companyMasterData;
 
     private final NseStockRepository  nseStockRepository;
     private final TestService testService;
@@ -158,33 +158,33 @@ public class PortfolioController {
         return Flux.just(zerodhaPortfolioService.processNseStock(file));
     }
 
-    @PostMapping("/test")
-    @Operation(
-        summary = "Test Portfolio Upload",
-        description = "Test portfolio upload with a sample file",
-        tags = {"Portfolio Upload"},
-        responses = {
-            @ApiResponse(
-                responseCode = "201", 
-                description = "Portfolio uploaded successfully", 
-                content = @Content(mediaType = "application/json")
-            ),
-            @ApiResponse(
-                responseCode = "400", 
-                description = "Invalid file format", 
-                content = @Content(mediaType = "application/json")
-            )
-        }
-    )
-    @ResponseStatus(code = HttpStatus.CREATED)
-    public void test(
-        @Parameter(
-            description = "Portfolio file for testing", 
-            required = true, 
-            content = @Content(mediaType = "multipart/form-data")
-        ) @RequestParam("file") MultipartFile file) throws IOException {
-        companyMasterData.processCompanyRecords("Company") ;
-    }
+    // @PostMapping("/test")
+    // @Operation(
+    //     summary = "Test Portfolio Upload",
+    //     description = "Test portfolio upload with a sample file",
+    //     tags = {"Portfolio Upload"},
+    //     responses = {
+    //         @ApiResponse(
+    //             responseCode = "201", 
+    //             description = "Portfolio uploaded successfully", 
+    //             content = @Content(mediaType = "application/json")
+    //         ),
+    //         @ApiResponse(
+    //             responseCode = "400", 
+    //             description = "Invalid file format", 
+    //             content = @Content(mediaType = "application/json")
+    //         )
+    //     }
+    // )
+    // @ResponseStatus(code = HttpStatus.CREATED)
+    // public void test(
+    //     @Parameter(
+    //         description = "Portfolio file for testing", 
+    //         required = true, 
+    //         content = @Content(mediaType = "multipart/form-data")
+    //     ) @RequestParam("file") MultipartFile file) throws IOException {
+    //     companyMasterData.processCompanyRecords("Company") ;
+    // }
 
     @GetMapping("/portfolio")
     @Operation(
