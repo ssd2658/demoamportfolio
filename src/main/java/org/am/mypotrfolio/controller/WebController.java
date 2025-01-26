@@ -1,17 +1,30 @@
 package org.am.mypotrfolio.controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.am.mypotrfolio.domain.BrokerPortfolioSummary;
 import org.am.mypotrfolio.domain.NseStock;
 import org.am.mypotrfolio.domain.NseStockDetails;
+import org.am.mypotrfolio.domain.SectorInvestmentDTO;
 import org.am.mypotrfolio.enums.FilterBy;
+import org.am.mypotrfolio.repo.NseStockRepository;
 import org.am.mypotrfolio.service.DhanService;
 import org.am.mypotrfolio.service.MStockService;
 import org.am.mypotrfolio.service.TestService;
 import org.am.mypotrfolio.service.ZerodhaService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,18 +32,22 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @Slf4j
-@RequiredArgsConstructor
 public class WebController {
 
-    private final DhanService dhanService;
-    private final MStockService mStockService;
-    private final ZerodhaService zerodhaService;
-    private final TestService testPortfolioService;
+    @Autowired
+    private DhanService dhanService;
+    @Autowired
+    private MStockService mStockService;
+    @Autowired
+    private ZerodhaService zerodhaService;
+    @Autowired
+    private TestService testPortfolioService;
+    @Autowired
+    private NseStockRepository nseStockRepository;
 
     @GetMapping({"/", "/home"})
     public String home() {
@@ -112,70 +129,273 @@ public class WebController {
         }
     }
 
+    @GetMapping("/portfolio-view")
+    public String viewPortfolio(
+        @RequestParam(value = "brokerPlatform", required = false) String brokerPlatform, 
+        Model model
+    ) {
+        try {
+            // Fetch all stock details
+            List<NseStockDetails> nseStockDetails = testPortfolioService.getAllStocks();
+
+            // Log broker platforms for debugging
+            log.info("Total stocks loaded: {}", nseStockDetails.size());
+            nseStockDetails.stream()
+                .filter(stock -> stock.getBrokerPlatform() != null)
+                .collect(Collectors.groupingBy(NseStockDetails::getBrokerPlatform))
+                .forEach((platform, stocks) -> 
+                    log.info("Broker Platform: {}, Stocks Count: {}", platform, stocks.size())
+                );
+
+            // Group stocks by broker platform and calculate summary
+            Map<String, BrokerPortfolioSummary> brokerSummaries = nseStockDetails.stream()
+                .filter(stock -> stock.getBrokerPlatform() != null)
+                .collect(Collectors.groupingBy(
+                    NseStockDetails::getBrokerPlatform,
+                    Collectors.collectingAndThen(
+                        Collectors.toList(),
+                        brokerStocks -> {
+                            double totalInvested = brokerStocks.stream()
+                                .mapToDouble(NseStockDetails::getInvestedValue)
+                                .sum();
+                            
+                            double currentValue = brokerStocks.stream()
+                                .mapToDouble(NseStockDetails::getCurrentValue)
+                                .sum();
+                            
+                            double profitLoss = currentValue - totalInvested;
+                            
+                            double percentageChange = totalInvested != 0 ? 
+                                (profitLoss / totalInvested) * 100 : 0.0;
+                            
+                            return BrokerPortfolioSummary.builder()
+                                .brokerPlatform(brokerStocks.get(0).getBrokerPlatform())
+                                .totalInvested(totalInvested)
+                                .currentValue(currentValue)
+                                .profitLoss(profitLoss)
+                                .percentageChange(percentageChange)
+                                .build();
+                        }
+                    )
+                ));
+
+            // Convert map to list for Thymeleaf rendering
+            List<BrokerPortfolioSummary> brokerPlatforms = new ArrayList<>(brokerSummaries.values());
+
+            // Log broker platforms for debugging
+            log.info("Broker Platforms Count: {}", brokerPlatforms.size());
+            brokerPlatforms.forEach(platform -> 
+                log.info("Platform: {}, Total Invested: {}", platform.getBrokerPlatform(), platform.getTotalInvested())
+            );
+
+            // Add attributes to model
+            model.addAttribute("brokerPlatforms", brokerPlatforms);
+            model.addAttribute("nseStockDetails", nseStockDetails);
+
+            return "portfolio-view";
+
+        } catch (Exception e) {
+            log.error("Error in portfolio view", e);
+            model.addAttribute("error", "Unable to load portfolio. Please try again.");
+            return "portfolio-view";
+        }
+    }
+
     @GetMapping("/view-portfolio")
-    public String viewPortfolio(Model model) {
+    public String viewPortfolioOld(
+        @RequestParam(value = "brokerPlatform", required = false) String brokerPlatform, 
+        Model model
+    ) {
         try {
             // Fetch portfolio data from a service
-            List<NseStockDetails> nseStockDetails = testPortfolioService.getAllStocks();
+            List<NseStockDetails> allStockDetails = testPortfolioService.getAllStocks();
             
-            if (nseStockDetails == null || nseStockDetails.isEmpty()) {
+            // Ensure allStockDetails is not null
+            allStockDetails = allStockDetails != null ? allStockDetails : Collections.emptyList();
+            
+            // Get unique broker platforms for dropdown
+            List<String> brokerPlatforms = allStockDetails.stream()
+                .filter(stock -> stock.getBrokerPlatform() != null)
+                .map(NseStockDetails::getBrokerPlatform)
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+
+            // Filter stocks by broker platform if specified
+            List<NseStockDetails> nseStockDetails = brokerPlatform != null && !brokerPlatform.isEmpty()
+                ? allStockDetails.stream()
+                    .filter(stock -> brokerPlatform.equalsIgnoreCase(stock.getBrokerPlatform()))
+                    .collect(Collectors.toList())
+                : allStockDetails;
+            
+            if (nseStockDetails.isEmpty()) {
                 // No data scenario
                 model.addAttribute("nseStockDetails", Collections.emptyList());
+                model.addAttribute("brokerPlatforms", brokerPlatforms);
+                model.addAttribute("selectedBrokerPlatform", brokerPlatform);
                 return "portfolio-view";
             }
 
-            // Calculate summary metrics
-            double totalInvestment = nseStockDetails.stream()
-                .mapToDouble(NseStockDetails::getTotalInvestment)
-                .sum();
-
-            double currentPortfolioValue = nseStockDetails.stream()
-                .mapToDouble(NseStockDetails::getCurrentValue)
-                .sum();
-
-            double dailyReturnChange = nseStockDetails.stream()
-                .mapToDouble(NseStockDetails::getReturnChange)
-                .sum();
-
-            double totalProfitLoss = Double.parseDouble(String.format("%.2f", currentPortfolioValue - totalInvestment));
-
-            // Calculate percentage change
-            double totalPercentChange = totalInvestment > 0 
-                ? Double.parseDouble(String.format("%.2f", ((currentPortfolioValue - totalInvestment) / totalInvestment) * 100)) 
-                : 0.0;
-
-            // Calculate daily return change
-            // double dailyTotalInvestment = portfolioData.stream()
-            //     .mapToDouble(stock -> stock.getQuantity() * stock.getOpenPrice())
+            // // Calculate portfolio metrics with null-safe operations
+            // double totalInvestment = nseStockDetails.stream()
+            //     .mapToDouble(stock -> stock.getInvestedValue() != 0.0 ? stock.getInvestedValue() : 0.0)
             //     .sum();
-            
-            // double dailyTotalCurrentValue = portfolioData.stream()
-            //     .mapToDouble(stock -> stock.getQuantity() * stock.getCurrentPrice())
+
+            // double currentPortfolioValue = nseStockDetails.stream()
+            //     .mapToDouble(stock -> Optional.ofNullable(stock.getCurrentValue()).orElse(0.0))
             //     .sum();
-            
-            // double dailyReturnChange = dailyTotalInvestment > 0 
-            //     ? Double.parseDouble(String.format("%.2f", (dailyTotalCurrentValue - dailyTotalInvestment))) 
+
+            // double dailyReturnChange = nseStockDetails.stream()
+            //     .mapToDouble(stock -> stock.getReturnChange() != 0.0 ? stock.getReturnChange() : 0.0)
+            //     .sum();
+
+            // // Safely calculate profit/loss and percentage change
+            // double totalProfitLoss = currentPortfolioValue - totalInvestment;
+            // double totalPercentChange = totalInvestment != 0.0 
+            //     ? ((currentPortfolioValue - totalInvestment) / totalInvestment) * 100 
             //     : 0.0;
 
-            // double dailyPercentChange = dailyTotalInvestment > 0 
-            //     ? Double.parseDouble(String.format("%.2f", ((dailyTotalCurrentValue - dailyTotalInvestment) / dailyTotalInvestment) * 100)) 
-            //     : 0.0;
+            // // Add attributes for view
+            // model.addAttribute("nseStockDetails", nseStockDetails);
+            // model.addAttribute("brokerPlatforms", brokerPlatforms);
+            // model.addAttribute("selectedBrokerPlatform", brokerPlatform);
+            // model.addAttribute("totalInvestment", totalInvestment);
+            // model.addAttribute("currentPortfolioValue", currentPortfolioValue);
+            // model.addAttribute("totalProfitLoss", totalProfitLoss);
+            // model.addAttribute("totalPercentChange", totalPercentChange);
+            // model.addAttribute("dailyReturnChange", dailyReturnChange);
 
-            // Add attributes for view
-            model.addAttribute("nseStockDetails", nseStockDetails);
-            model.addAttribute("totalInvestment", totalInvestment);
-            model.addAttribute("currentPortfolioValue", currentPortfolioValue);
-            model.addAttribute("totalProfitLoss", totalProfitLoss);
-            model.addAttribute("totalPercentChange", totalPercentChange);
-            model.addAttribute("dailyReturnChange", dailyReturnChange);
-            //model.addAttribute("dailyPercentChange", dailyPercentChange);
+            setPortfolioCommonData(nseStockDetails, model);
 
             return "portfolio-view";
+
         } catch (Exception e) {
             log.error("Error fetching portfolio data", e);
             model.addAttribute("error", "Unable to fetch portfolio data. Please try again.");
             model.addAttribute("nseStockDetails", Collections.emptyList());
+            model.addAttribute("brokerPlatforms", Collections.emptyList());
             return "portfolio-view";
         }
+    }
+
+    @GetMapping("/broker-portfolio-details")
+    public String brokerPortfolioDetails(@RequestParam(value = "brokerPlatform", required = true) String brokerPlatform, 
+                                         @RequestParam(value = "page", required = false) Integer page,
+                                         @RequestParam(value = "sortBy", required = false) String sortBy,
+                                         @RequestParam(value = "sortOrder", required = false) String sortOrder,
+                                         Model model) {
+        try {
+            log.info("Fetching broker portfolio details for platform: {}", brokerPlatform);
+            
+            // Fetch stocks for specific broker platform
+            List<NseStockDetails> brokerStocks = testPortfolioService.getAllStocks(brokerPlatform);
+
+            if (brokerStocks == null || brokerStocks.isEmpty()) {
+                log.warn("No stocks found for broker platform: {}", brokerPlatform);
+                model.addAttribute("errorMessage", "No portfolio data found for " + brokerPlatform);
+                return "broker-portfolio-details";
+            }
+            setPortfolioCommonData(brokerStocks, model);
+
+            // Pagination for sector investments
+            int pageSize = 10;
+            int pageNumber = page != null && page >= 0 ? page : 0;
+            
+            List<SectorInvestmentDTO> sectorInvestments = nseStockRepository.getSectorInvestments(brokerPlatform);
+            
+            // Validate and adjust page number
+            int totalElements = sectorInvestments.size();
+            int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+            pageNumber = Math.min(pageNumber, Math.max(0, totalPages - 1));
+            
+            // Paginate the list manually
+            List<SectorInvestmentDTO> paginatedSectorInvestments = sectorInvestments.stream()
+                .skip((long) pageNumber * pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList());
+            
+            // Create Page object
+            Pageable pageable = PageRequest.of(
+                pageNumber, 
+                pageSize, 
+                Sort.by(sortBy != null ? sortBy : "industry").ascending()
+            );
+            
+            Page<SectorInvestmentDTO> sectorInvestmentsPage = new PageImpl<>(
+                paginatedSectorInvestments,
+                pageable,
+                totalElements
+            );
+            
+            log.info("Sector Investments Page - Total Elements: {}, Total Pages: {}", 
+                     sectorInvestmentsPage.getTotalElements(), 
+                     sectorInvestmentsPage.getTotalPages());
+            
+            if (sectorInvestmentsPage != null) {
+                model.addAttribute("sectorInvestments", sectorInvestmentsPage.getContent());
+                model.addAttribute("sectorInvestmentsPage", sectorInvestmentsPage);
+                model.addAttribute("currentPage", pageNumber);
+                model.addAttribute("totalPages", sectorInvestmentsPage.getTotalPages());
+                model.addAttribute("currentSortBy", sortBy != null ? sortBy : "industry");
+                model.addAttribute("currentSortOrder", "ASC");
+                model.addAttribute("brokerPlatform", brokerPlatform);
+            } else {
+                log.error("Sector investments page is null");
+                model.addAttribute("errorMessage", "Failed to load sector investments page");
+            }
+
+            // Top performing and worst performing stocks
+            List<NseStockDetails> topPerformingStocks = brokerStocks.stream()
+                .sorted(Comparator.comparing(NseStockDetails::getPercentChange).reversed())
+                .limit(5)
+                .collect(Collectors.toList());
+
+            List<NseStockDetails> worstPerformingStocks = brokerStocks.stream()
+                .sorted(Comparator.comparing(NseStockDetails::getPercentChange))
+                .limit(5)
+                .collect(Collectors.toList());
+
+            model.addAttribute("topPerformingStocks", topPerformingStocks);
+            model.addAttribute("worstPerformingStocks", worstPerformingStocks);
+
+            return "broker-portfolio-details";
+
+        } catch (Exception e) {
+            log.error("Error fetching broker portfolio details for {}", brokerPlatform, e);
+            model.addAttribute("errorMessage", "Unable to fetch portfolio details: " + e.getMessage());
+            return "broker-portfolio-details";
+        }
+    }
+
+    private void setPortfolioCommonData(List<NseStockDetails> nseStockDetails, Model model) {
+
+         // Calculate portfolio metrics with null-safe operations
+         double totalInvestment = nseStockDetails.stream()
+         .mapToDouble(stock -> stock.getInvestedValue() != 0.0 ? stock.getInvestedValue() : 0.0)
+         .sum();
+
+     double currentPortfolioValue = nseStockDetails.stream()
+         .mapToDouble(stock -> Optional.ofNullable(stock.getCurrentValue()).orElse(0.0))
+         .sum();
+
+     double dailyReturnChange = nseStockDetails.stream()
+         .mapToDouble(stock -> stock.getReturnChange() != 0.0 ? stock.getReturnChange() : 0.0)
+         .sum();
+
+     // Safely calculate profit/loss and percentage change
+     double totalProfitLoss = currentPortfolioValue - totalInvestment;
+     double totalPercentChange = totalInvestment != 0.0 
+         ? ((currentPortfolioValue - totalInvestment) / totalInvestment) * 100 
+         : 0.0;
+
+     // Add attributes for view
+     model.addAttribute("brokerStocks", nseStockDetails);
+     model.addAttribute("nseStockDetails", nseStockDetails);
+     model.addAttribute("totalInvestment", totalInvestment);
+     model.addAttribute("currentPortfolioValue", currentPortfolioValue);
+     model.addAttribute("totalProfitLoss", totalProfitLoss);
+     model.addAttribute("totalPercentChange", totalPercentChange);
+     model.addAttribute("dailyReturnChange", dailyReturnChange);
+
     }
 }

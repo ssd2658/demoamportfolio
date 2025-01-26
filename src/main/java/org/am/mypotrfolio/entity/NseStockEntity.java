@@ -1,10 +1,12 @@
 package org.am.mypotrfolio.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,5 +34,11 @@ public class NseStockEntity {
     private double investedValue;
     private String isMarginTrade;
     private String userId;
+    @Column(name = "created_date")
     private LocalDateTime createdDate;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdDate = LocalDateTime.now();
+    }
 }

@@ -107,7 +107,22 @@ public class TestService {
     }
 
     public List<NseStockDetails> getAllStocks() {
-        return nseStockRepository.getInvestedStock().stream().toList();
+        return nseStockRepository.getInvestedStock();
+    }
+
+    public List<NseStockDetails> getAllStocks(String brokerPlatform) {
+        return getStocksByBrokerPlatform(brokerPlatform);
+    }
+
+    public List<NseStockDetails> getStocksByBrokerPlatform(String brokerPlatform) {
+         List<NseStockDetails> stockDetails = nseStockRepository.getInvestedStock();
+        //.stream()
+        //     .filter(entity -> entity.getBrokerPlatform() != null && 
+        //            entity.getBrokerPlatform().equalsIgnoreCase(brokerPlatform))
+        //     .collect(Collectors.toList());
+        
+        // Enrich stock details with current value and other details
+        return nseStockRepository.enrichNseStockDetailsList(stockDetails);
     }
 
     private NseStock aggregateStocks(List<NseStock> stocks) {

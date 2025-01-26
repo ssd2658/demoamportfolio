@@ -15,10 +15,10 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+    #show-sql: true
+    #properties:
+      #hibernate:
+        #format_sql: true
   springdoc:
     swagger-ui:
       path: /swagger-ui.html
@@ -38,7 +38,7 @@ spring:
     cache: false
     prefix: classpath:/templates/
     suffix: .html
-    view-names: index, upload, portfolio-result, error
+    view-names: index, upload, portfolio-result, error, broker-portfolio-details
   servlet:
     multipart:
       max-file-size: 10MB

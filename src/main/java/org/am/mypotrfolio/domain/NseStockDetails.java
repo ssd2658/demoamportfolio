@@ -30,7 +30,6 @@ public class NseStockDetails {
     private double returnChange;
     private UUID id;
 
-    @JsonIgnore
     private String brokerPlatform;
     @JsonIgnore
     private String tradeType;
@@ -92,5 +91,9 @@ public class NseStockDetails {
 
     public void setReturnChange(double returnChange) {
         this.returnChange = returnChange;
+    }
+
+    public String getBrokerPlatform() {
+        return this.brokerPlatform;
     }
 }

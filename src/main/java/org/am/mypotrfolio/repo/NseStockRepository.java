@@ -6,8 +6,12 @@ import org.am.mypotrfolio.domain.SectorInvestmentDTO;
 import org.am.mypotrfolio.entity.EquityDataEntity;
 import org.am.mypotrfolio.entity.NseStockEntity;
 import org.am.mypotrfolio.entity.StockEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,11 +22,24 @@ import java.util.stream.Collectors;
 @Repository
 public interface NseStockRepository extends JpaRepository<NseStockEntity, UUID> {
 
-    // @Query("SELECT new org.am.mypotrfolio.domain.SectorInvestmentDTO(c.sector, SUM(n.investedValue)) " +
-    //         "FROM NseStockEntity n " +
-    //         "JOIN StockEntity c ON n.symbol = c.symbol " +
-    //         "GROUP BY c.sector")
-    // List<SectorInvestmentDTO> findTotalInvestedBySector();
+    @Query("SELECT new org.am.mypotrfolio.domain.SectorInvestmentDTO(e.industry, SUM(n.investedValue), SUM(n.quantity)) " +
+            "FROM NseStockEntity n " +
+            "JOIN EquityDataEntity e ON n.symbol = e.symbol " +
+            "WHERE n.brokerPlatform = 'Zerodha' " +
+            "GROUP BY e.industry")
+    List<SectorInvestmentDTO> findTotalInvestedBySector();
+
+    @Query("SELECT new org.am.mypotrfolio.domain.SectorInvestmentDTO(e.industry, SUM(n.investedValue), SUM(n.quantity)) " +
+            "FROM NseStockEntity n " +
+            "JOIN EquityDataEntity e ON n.symbol = e.symbol " +
+            "WHERE n.brokerPlatform = 'Zerodha' " +
+            "GROUP BY e.industry")
+    Page<SectorInvestmentDTO> findTotalInvestedBySector(Pageable pageable);
+
+    @Query("SELECT n FROM NseStockEntity n " +
+            "WHERE n.brokerPlatform = 'Zerodha' " +
+            "AND n.createdDate = (SELECT MAX(m.createdDate) FROM NseStockEntity m WHERE m.symbol = n.symbol)")
+    List<NseStockEntity> getAllNseStocks(@Param("brokerPlatform") String brokerPlatform);
 
     @Query("SELECT n FROM NseStockEntity n")
     List<NseStockEntity> getAllNseStocks();
@@ -41,15 +58,23 @@ public interface NseStockRepository extends JpaRepository<NseStockEntity, UUID> 
         return stockEntities.isEmpty() ? null : stockEntities.get(0);
     }
 
+    default List<NseStockDetails> getInvestedStock(String brokerPlatform) {
+        List<NseStockEntity> nseStocks = getAllNseStocks(brokerPlatform);
+        return getNseStockDetails(nseStocks);
+    }
     default List<NseStockDetails> getInvestedStock() {
         List<NseStockEntity> nseStocks = getAllNseStocks();
-        
+        return getNseStockDetails(nseStocks);
+    }
+
+    default List<NseStockDetails> getNseStockDetails(List<NseStockEntity> nseStocks) {
         return nseStocks.stream().map((NseStockEntity n) -> {
             StockEntity matchingStock = getLastStockEntity(n.getSymbol());
 
             // Skip mapping if matchingStock is null
             if (matchingStock == null) {
                 return NseStockDetails.builder()
+                .brokerPlatform(n.getBrokerPlatform()==null ? "Default" : n.getBrokerPlatform())
                     .symbol(n.getSymbol())
                     .quantity(n.getQuantity())
                     .avePrice(n.getAvePrice())
@@ -112,4 +137,11 @@ public interface NseStockRepository extends JpaRepository<NseStockEntity, UUID> 
             .map(this::enrichNseStockDetails)
             .collect(Collectors.toList());
     }
+
+    @Query("SELECT new org.am.mypotrfolio.domain.SectorInvestmentDTO(e.industry, SUM(n.investedValue), SUM(n.quantity)) " +
+            "FROM NseStockEntity n " +
+            "JOIN EquityDataEntity e ON n.symbol = e.symbol " +
+            "WHERE LOWER(n.brokerPlatform) = LOWER(:brokerPlatform) " +
+            "GROUP BY e.industry")
+    List<SectorInvestmentDTO> getSectorInvestments(@Param("brokerPlatform") String brokerPlatform);
 }

@@ -1,6 +1,7 @@
 package org.am.mypotrfolio.mapper;
 
 import org.am.mypotrfolio.domain.NseStock;
+import org.am.mypotrfolio.domain.NseStockDetails;
 import org.am.mypotrfolio.entity.NseStockEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -13,4 +14,6 @@ public interface NseStockMapper {
     NseStock mapNseStock(NseStockEntity nseStockEntity);
 
     NseStockEntity mapNseStockEntity(NseStock nseStock);
+
+    NseStockDetails mapNseStockDetails(NseStockEntity nseStockEntity);
 }
