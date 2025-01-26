@@ -450,107 +450,62 @@
         </div>
     </div>
 
+    <script th:src="@{/webjars/jquery/3.6.0/jquery.min.js}"></script>
     <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/fixedheader/3.2.4/js/dataTables.fixedHeader.min.js"></script>
+
     <script th:inline="javascript">
         $(document).ready(function() {
-            // Initialize multi-select for stock names
-            $('#stockNameFilter').select2({
-                placeholder: "Select Stock Names",
-                allowClear: true,
-                width: '100%'
-            });
+            // Numeric sorting function for financial data
+            $.fn.dataTable.ext.type.order['financial-pre'] = function(data) {
+                // Remove currency symbols, commas, and convert to number
+                var number = data.replace(/[^0-9.-]/g, '');
+                return parseFloat(number);
+            };
 
-            // Advanced filter toggle
-            $('#advancedFilterToggle').on('change', function() {
-                $('#advancedFilterSection').toggle(this.checked);
-            });
-
-            // DataTable initialization
             var table = $('#portfolioTable').DataTable({
-                "pageLength": 50,
-                "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
-                "order": [
-                    [0, 'asc'],   // Stock Name ascending
-                    [7, 'desc'],  // Profit/Loss % descending
-                    [8, 'desc']   // Return per Day descending
+                // Pagination configuration
+                "pageLength": 25,  // Default to 25 rows
+                "lengthMenu": [
+                    [10, 25, 50, 100, -1], 
+                    ['10', '25', '50', '100', 'All']
                 ],
+                
+                // Sorting configuration
+                "order": [],  // Disable initial sorting
                 "columnDefs": [
-                    {
-                        "targets": [2, 3, 4, 5, 6], // Numeric value columns
-                        "type": "numeric"
+                    // Apply financial sorting to specific columns
+                    { 
+                        "targets": [1, 2, 4, 5, 6, 7, 8, 9],  // Columns with numeric/financial data
+                        "type": 'financial'
                     },
-                    {
-                        "targets": [7, 9], // Percentage columns
-                        "type": "percentage"
+                    { 
+                        "orderable": true,  // Ensure these columns are sortable
+                        "targets": '_all'
                     }
-                ]
+                ],
+
+                // Responsive design
+                responsive: true,
+
+                // Language customization
+                "language": {
+                    "lengthMenu": "Show _MENU_ stocks",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ stocks",
+                    "paginate": {
+                        "first": "First",
+                        "last": "Last",
+                        "next": "Next",
+                        "previous": "Previous"
+                    }
+                }
             });
 
-            // Stock name and advanced filtering functionality
-            function applyFilters() {
-                // Reset previous custom search
-                $.fn.dataTable.ext.search.length = 0;
-
-                // Stock Symbol Filter
-                var selectedStocks = $('#stockNameFilter').val() || [];
-                
-                // Advanced Filter Conditions
-                var minProfit = parseFloat($('#minProfitFilter').val()) || -Infinity;
-                var maxProfit = parseFloat($('#maxProfitFilter').val()) || Infinity;
-                var minInvestment = parseFloat($('#minInvestmentFilter').val()) || 0;
-                var maxInvestment = parseFloat($('#maxInvestmentFilter').val()) || Infinity;
-
-                // Custom filter function
-                $.fn.dataTable.ext.search.push(
-                    function(settings, data) {
-                        // Stock Symbol Check
-                        var stockSymbol = data[0];
-                        var symbolMatch = selectedStocks.length === 0 || 
-                            selectedStocks.includes(stockSymbol);
-
-                        // Percentage Change Check
-                        var percentChange = parseFloat(data[7].replace('%', '')) || 0;
-                        var percentageMatch = percentChange >= minProfit && 
-                            percentChange <= maxProfit;
-
-                        // Investment Check
-                        var investedValue = parseFloat(data[4]) || 0;
-                        var investmentMatch = investedValue >= minInvestment && 
-                            investedValue <= maxInvestment;
-
-                        // Combine all conditions
-                        return symbolMatch && 
-                            (minProfit !== -Infinity || maxProfit !== Infinity ? percentageMatch : true) &&
-                            (minInvestment !== 0 || maxInvestment !== Infinity ? investmentMatch : true);
-                    }
-                );
-
-                // Redraw the table with new filters
-                table.draw();
-            }
-
-            // Apply filter button
-            $('#applyStockFilter').on('click', applyFilters);
-
-            // Clear filter button
-            $('#clearStockFilter').on('click', function() {
-                // Clear all inputs
-                $('#stockNameFilter').val(null).trigger('change');
-                $('#minProfitFilter, #maxProfitFilter, #minInvestmentFilter, #maxInvestmentFilter').val('');
-                
-                // Reset advanced filter toggle
-                $('#advancedFilterToggle').prop('checked', false);
-                $('#advancedFilterSection').hide();
-
-                // Clear all custom searches
-                $.fn.dataTable.ext.search.length = 0;
-                
-                // Redraw the table
-                table.draw();
+            // Optional: Add global search functionality
+            $('#globalSearch').on('keyup', function() {
+                table.search(this.value).draw();
             });
         });
     </script>

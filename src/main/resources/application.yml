@@ -1,7 +1,8 @@
 azure:
   keyvault:
     uri: https://amportfoliokeyvault.vault.azure.net/
-
+server:
+  port: 8085
 spring:
   application:
     name: stock-data
