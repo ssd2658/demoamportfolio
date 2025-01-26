@@ -32,10 +32,10 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card text-white mb-3" th:classappend="${percentageChange >= 0 ? 'bg-success' : 'bg-danger'}">
+                <div class="card text-white mb-3" th:classappend="${dailyReturnChange >= 0 ? 'bg-success' : 'bg-danger'}">
                     <div class="card-header">Percentage Change</div>
                     <div class="card-body">
-                        <h5 class="card-title" th:text="${#numbers.formatDecimal(percentageChange, 0, 2, 'POINT')} + '%'">0.00%</h5>
+                        <h5 class="card-title" th:text="${#numbers.formatDecimal(dailyReturnChange, 0, 2, 'POINT')}+ ' ₹'">0.00 ₹</h5>
                     </div>
                 </div>
             </div>
@@ -72,7 +72,7 @@
                                 <tr>
                                     <th>Sector</th>
                                     <th>Total Invested Amount</th>
-                                    <th>Total Quantity</th>
+    
                                     <th>% of Portfolio</th>
                                 </tr>
                             </thead>
@@ -80,7 +80,6 @@
                                 <tr th:each="sector : ${sectorInvestments}">
                                     <td th:text="${sector.getSector()}">Sector Name</td>
                                     <td th:text="${#numbers.formatDecimal(sector.getTotalInvestedAmount(), 0, 2, 'POINT')} + ' ₹'">0.00 ₹</td>
-                                    <td th:text="${#numbers.formatDecimal(sector.getTotalQuantity(), 0, 2, 'POINT')}">0.00</td>
                                     <td th:text="${#numbers.formatDecimal(sector.getPercentageOfPortfolio(), 0, 2, 'POINT')} + '%'">0.00%</td>
                                 </tr>
                             </tbody>
@@ -204,12 +203,12 @@
                                     <td th:text="${stock.symbol}">STOCK</td>
                                     <td th:text="${stock.companyName}">Company</td>
                                     <td th:text="${stock.industry}">Sector</td>
-                                    <td th:text="${#numbers.formatInteger(stock.quantity, 0, 'COMMA')}">0</td>
-                                    <td th:text="${#numbers.formatDecimal(stock.avePrice, 0, 2, 'COMMA')}">0.00</td>
-                                    <td th:text="${#numbers.formatDecimal(stock.investedValue, 0, 2, 'COMMA')}">0.00</td>
-                                    <td th:text="${#numbers.formatDecimal(stock.currentPrice, 0, 2, 'COMMA')}">0.00</td>
-                                    <td th:text="${#numbers.formatDecimal(stock.currentValue, 0, 2, 'COMMA')}">0.00</td>
-                                    <td th:text="${#numbers.formatDecimal(stock.profitLoss, 0, 2, 'COMMA')}" 
+                                    <td th:text="${#numbers.formatInteger(stock.quantity, 0, 'POINT')}">0</td>
+                                    <td th:text="${#numbers.formatDecimal(stock.avePrice, 0, 2, 'POINT')}">0.00</td>
+                                    <td th:text="${#numbers.formatDecimal(stock.investedValue, 0, 2, 'POINT')}">0.00</td>
+                                    <td th:text="${#numbers.formatDecimal(stock.currentPrice, 0, 2, 'POINT')}">0.00</td>
+                                    <td th:text="${#numbers.formatDecimal(stock.currentValue, 0, 2, 'POINT')}">0.00</td>
+                                    <td th:text="${#numbers.formatDecimal(stock.profitLoss, 0, 2, 'POINT')}" 
                                         th:style="${stock.profitLoss >= 0 ? 'color: green;' : 'color: red;'}">0.00</td>
                                     <td th:text="${#numbers.formatDecimal(stock.percentChange, 0, 2, 'POINT')} + '%'" 
                                         th:style="${stock.percentChange >= 0 ? 'color: green;' : 'color: red;'}">0.00%</td>

@@ -296,7 +296,9 @@ public class WebController {
                 return "broker-portfolio-details";
             }
             setPortfolioCommonData(brokerStocks, model);
-
+            double currentPortfolioValue = brokerStocks.stream()
+            .mapToDouble(stock -> Optional.ofNullable(stock.getCurrentValue()).orElse(0.0))
+            .sum();
             // Pagination for sector investments
             int pageSize = 10;
             int pageNumber = page != null && page >= 0 ? page : 0;
