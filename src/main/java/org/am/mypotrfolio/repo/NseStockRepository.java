@@ -3,6 +3,7 @@ package org.am.mypotrfolio.repo;
 import org.am.mypotrfolio.domain.NseStock;
 import org.am.mypotrfolio.domain.NseStockDetails;
 import org.am.mypotrfolio.domain.SectorInvestmentDTO;
+import org.am.mypotrfolio.entity.EquityDataEntity;
 import org.am.mypotrfolio.entity.NseStockEntity;
 import org.am.mypotrfolio.entity.StockEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -27,6 +29,9 @@ public interface NseStockRepository extends JpaRepository<NseStockEntity, UUID> 
 
     @Query("SELECT s FROM StockEntity s")
     List<StockEntity> getAllStockEntities();
+
+    @Query("SELECT s FROM EquityDataEntity s WHERE s.symbol = :symbol")
+    Optional<EquityDataEntity> findBySymbol(String symbol);
 
     @Query("SELECT s FROM StockEntity s WHERE s.symbol = :symbol ORDER BY s.lastUpdateTime DESC")
     List<StockEntity> getLastStockEntities(String symbol);
@@ -88,6 +93,23 @@ public interface NseStockRepository extends JpaRepository<NseStockEntity, UUID> 
                 .percentChange(totalPercentChange)
                 .returnChange(dailyChange)
                 .build();
-        }).collect(Collectors.toList());
+        }).map(this::enrichNseStockDetails)
+        .collect(Collectors.toList());
+    }
+
+    // New method to populate NseStockDetails with additional information
+    default NseStockDetails enrichNseStockDetails(NseStockDetails stockDetails) {
+        findBySymbol(stockDetails.getSymbol()).ifPresent(equityData -> {
+            stockDetails.setIndustry(equityData.getIndustry());
+            stockDetails.setCompanyName(equityData.getName());
+        });
+        return stockDetails;
+    }
+
+    // Update existing methods to use enrichment
+    default List<NseStockDetails> enrichNseStockDetailsList(List<NseStockDetails> stockDetailsList) {
+        return stockDetailsList.stream()
+            .map(this::enrichNseStockDetails)
+            .collect(Collectors.toList());
     }
 }

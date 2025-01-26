@@ -116,24 +116,24 @@ public class WebController {
     public String viewPortfolio(Model model) {
         try {
             // Fetch portfolio data from a service
-            List<NseStockDetails> portfolioData = testPortfolioService.getAllStocks();
+            List<NseStockDetails> nseStockDetails = testPortfolioService.getAllStocks();
             
-            if (portfolioData == null || portfolioData.isEmpty()) {
+            if (nseStockDetails == null || nseStockDetails.isEmpty()) {
                 // No data scenario
-                model.addAttribute("portfolioData", Collections.emptyList());
+                model.addAttribute("nseStockDetails", Collections.emptyList());
                 return "portfolio-view";
             }
 
             // Calculate summary metrics
-            double totalInvestment = portfolioData.stream()
+            double totalInvestment = nseStockDetails.stream()
                 .mapToDouble(NseStockDetails::getTotalInvestment)
                 .sum();
 
-            double currentPortfolioValue = portfolioData.stream()
+            double currentPortfolioValue = nseStockDetails.stream()
                 .mapToDouble(NseStockDetails::getCurrentValue)
                 .sum();
 
-            double dailyReturnChange = portfolioData.stream()
+            double dailyReturnChange = nseStockDetails.stream()
                 .mapToDouble(NseStockDetails::getReturnChange)
                 .sum();
 
@@ -162,7 +162,7 @@ public class WebController {
             //     : 0.0;
 
             // Add attributes for view
-            model.addAttribute("portfolioData", portfolioData);
+            model.addAttribute("nseStockDetails", nseStockDetails);
             model.addAttribute("totalInvestment", totalInvestment);
             model.addAttribute("currentPortfolioValue", currentPortfolioValue);
             model.addAttribute("totalProfitLoss", totalProfitLoss);
@@ -174,7 +174,7 @@ public class WebController {
         } catch (Exception e) {
             log.error("Error fetching portfolio data", e);
             model.addAttribute("error", "Unable to fetch portfolio data. Please try again.");
-            model.addAttribute("portfolioData", Collections.emptyList());
+            model.addAttribute("nseStockDetails", Collections.emptyList());
             return "portfolio-view";
         }
     }

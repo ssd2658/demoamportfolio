@@ -17,6 +17,8 @@ import java.util.UUID;
 @NoArgsConstructor
 public class NseStockDetails {
     private String symbol;
+    private String companyName;  
+    private String industry;     
     private double quantity;
     private double avePrice;
     private double investedValue;
