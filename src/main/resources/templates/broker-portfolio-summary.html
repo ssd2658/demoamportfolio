@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Broker Portfolio Summary</title>
+    <link th:replace="~{fragments/header :: header-css}">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="container mt-4">
+        <h2 class="mb-4">Broker Portfolio Summary</h2>
+
+        <!-- Overall Portfolio Summary Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                Overall Portfolio Performance
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Total Investment:</strong>
+                        <p th:text="${#numbers.formatDecimal(overallTotalInvestment, 0, 2, 'COMMA')} + ' ₹'" class="text-muted"></p>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Current Portfolio Value:</strong>
+                        <p th:text="${#numbers.formatDecimal(overallCurrentPortfolioValue, 0, 2, 'COMMA')} + ' ₹'" class="text-muted"></p>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Total Profit/Loss:</strong>
+                        <p th:text="${#numbers.formatDecimal(overallProfitLoss, 0, 2, 'COMMA')} + ' ₹'" 
+                           th:style="${overallProfitLoss >= 0 ? 'color: green;' : 'color: red;'}"></p>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Overall % Change:</strong>
+                        <p th:text="${#numbers.formatDecimal(overallPercentageChange, 0, 2, 'COMMA')} + '%'" 
+                           th:style="${overallPercentageChange >= 0 ? 'color: green;' : 'color: red;'}"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Broker-wise Portfolio Summary Table -->
+        <table id="brokerSummaryTable" class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Broker Platform</th>
+                    <th>Total Investment</th>
+                    <th>Current Value</th>
+                    <th>Profit/Loss</th>
+                    <th>% Change</th>
+                    <th>Stock Count</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="broker : ${brokerSummary}">
+                    <td th:text="${broker.brokerPlatform}"></td>
+                    <td th:text="${#numbers.formatDecimal(broker.totalInvestment, 0, 2, 'COMMA')} + ' ₹'"></td>
+                    <td th:text="${#numbers.formatDecimal(broker.currentPortfolioValue, 0, 2, 'COMMA')} + ' ₹'"></td>
+                    <td th:text="${#numbers.formatDecimal(broker.profitLoss, 0, 2, 'COMMA')} + ' ₹'" 
+                        th:style="${broker.profitLoss >= 0 ? 'color: green;' : 'color: red;'}"></td>
+                    <td th:text="${#numbers.formatDecimal(broker.percentageChange, 0, 2, 'COMMA')} + '%'" 
+                        th:style="${broker.percentageChange >= 0 ? 'color: green;' : 'color: red;'}"></td>
+                    <td th:text="${broker.stockCount}"></td>
+                    <td>
+                        <a th:href="@{/broker-portfolio-details(brokerPlatform=${broker.brokerPlatform})}" class="btn btn-sm btn-primary">
+                            View Details
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <div th:replace="~{fragments/header :: scripts}"></div>
+
+    <script th:inline="javascript">
+        $(document).ready(function() {
+            $('#brokerSummaryTable').DataTable({
+                "pageLength": 10,
+                "lengthMenu": [
+                    [5, 10, 25, 50, -1], 
+                    ['5', '10', '25', '50', 'All']
+                ],
+                "order": [],
+                "columnDefs": [
+                    { 
+                        "targets": [1, 2, 3, 4],  // Numeric columns
+                        "type": 'num-fmt'
+                    }
+                ]
+            });
+        });
+    </script>
+</body>
+</html>
