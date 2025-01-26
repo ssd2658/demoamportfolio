@@ -299,11 +299,19 @@ public class WebController {
             double currentPortfolioValue = brokerStocks.stream()
             .mapToDouble(stock -> Optional.ofNullable(stock.getCurrentValue()).orElse(0.0))
             .sum();
-            // Pagination for sector investments
+            // Paginate and sort sector investments
+            List<SectorInvestmentDTO> sectorInvestments = nseStockRepository.getSectorInvestments(brokerPlatform);
+            
+            // Sort sector investments by percentage of portfolio
+            sectorInvestments.sort((s1, s2) -> {
+                double percentS1 = s1.getTotalInvestedAmount() * 100 / currentPortfolioValue;
+                double percentS2 = s2.getTotalInvestedAmount() * 100 / currentPortfolioValue;
+                return Double.compare(percentS2, percentS1); // Sort in descending order
+            });
+            
+            // Validate and adjust page number
             int pageSize = 10;
             int pageNumber = page != null && page >= 0 ? page : 0;
-            
-            List<SectorInvestmentDTO> sectorInvestments = nseStockRepository.getSectorInvestments(brokerPlatform);
             
             // Validate and adjust page number
             int totalElements = sectorInvestments.size();
@@ -320,7 +328,7 @@ public class WebController {
             Pageable pageable = PageRequest.of(
                 pageNumber, 
                 pageSize, 
-                Sort.by(sortBy != null ? sortBy : "industry").ascending()
+                Sort.by("totalInvestedAmount").descending()
             );
             
             Page<SectorInvestmentDTO> sectorInvestmentsPage = new PageImpl<>(
@@ -336,6 +344,7 @@ public class WebController {
             if (sectorInvestmentsPage != null) {
                 model.addAttribute("sectorInvestments", sectorInvestmentsPage.getContent());
                 model.addAttribute("sectorInvestmentsPage", sectorInvestmentsPage);
+                model.addAttribute("currentPortfolioValue", currentPortfolioValue);
                 model.addAttribute("currentPage", pageNumber);
                 model.addAttribute("totalPages", sectorInvestmentsPage.getTotalPages());
                 model.addAttribute("currentSortBy", sortBy != null ? sortBy : "industry");

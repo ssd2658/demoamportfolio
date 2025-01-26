@@ -11,8 +11,13 @@ public class SectorInvestmentDTO {
     private double overAllPNL;
     private double totalQuantity;
 
-    public SectorInvestmentDTO(String industry, double totalInvestedAmount, double totalQuantity) {
-        this.sector = industry;
+    public SectorInvestmentDTO(String sector, double totalInvestedAmount) {
+        this.sector = sector;
+        this.totalInvestedAmount = totalInvestedAmount;
+    }
+
+    public SectorInvestmentDTO(String sector, double totalInvestedAmount, double totalQuantity) {
+        this.sector = sector;
         this.totalInvestedAmount = totalInvestedAmount;
         this.totalQuantity = totalQuantity;
     }

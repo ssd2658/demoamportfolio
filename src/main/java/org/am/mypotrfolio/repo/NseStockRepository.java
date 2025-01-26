@@ -138,7 +138,9 @@ public interface NseStockRepository extends JpaRepository<NseStockEntity, UUID> 
             .collect(Collectors.toList());
     }
 
-    @Query("SELECT new org.am.mypotrfolio.domain.SectorInvestmentDTO(e.industry, SUM(n.investedValue), SUM(n.quantity)) " +
+    @Query("SELECT new org.am.mypotrfolio.domain.SectorInvestmentDTO(" +
+            "e.industry, " +
+            "SUM(n.investedValue)) " +
             "FROM NseStockEntity n " +
             "JOIN EquityDataEntity e ON n.symbol = e.symbol " +
             "WHERE LOWER(n.brokerPlatform) = LOWER(:brokerPlatform) " +
