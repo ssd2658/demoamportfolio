@@ -1,0 +1,17 @@
+services:
+
+  myportfolio-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/investment
+      - SPRING_DATASOURCE_USERNAME=adminuser
+      - SPRING_DATASOURCE_PASSWORD=password
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+    driver: local
