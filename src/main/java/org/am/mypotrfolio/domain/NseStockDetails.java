@@ -71,6 +71,24 @@ public class NseStockDetails {
         this.companyName = companyName;
     }
 
+    // Constructor for aggregated stock details with current price and value
+    public NseStockDetails(String symbol, String isin, double quantity, double investedValue, 
+                          double avePrice, String industry, String companyName,
+                          double currentPrice, double currentValue) {
+        this.symbol = symbol;
+        this.isin = isin;
+        this.quantity = quantity;
+        this.investedValue = investedValue;
+        this.avePrice = avePrice;
+        this.industry = industry;
+        this.companyName = companyName;
+        this.currentPrice = currentPrice;
+        this.currentValue = currentValue;
+        // Calculate profit/loss and return change
+        this.profitLoss = currentValue - investedValue;
+        this.returnChange = investedValue > 0 ? (profitLoss / investedValue) * 100 : 0;
+    }
+
     public double getTotalInvestment() {
         return Double.parseDouble(String.format("%.2f", quantity * avePrice));
     }

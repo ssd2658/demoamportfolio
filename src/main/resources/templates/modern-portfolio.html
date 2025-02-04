@@ -148,6 +148,54 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2 summary-card">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Current Value</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalCurrentValue">₹0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class='bx bx-rupee fs-2'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2 summary-card">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Profit/Loss</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalProfitLoss">₹0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class='bx bx-rupee fs-2'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2 summary-card">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Return</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalReturn">0%</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class='bx bx-percent fs-2'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Portfolio Table -->
@@ -159,9 +207,14 @@
                     <select class="form-select form-select-sm ms-2" id="sortSelect">
                         <option value="symbol">Symbol</option>
                         <option value="isin">ISIN</option>
-                        <option value="investedValue">Invested Value</option>
-                        <option value="quantity">Quantity</option>
                         <option value="industry">Industry</option>
+                        <option value="quantity">Quantity</option>
+                        <option value="avePrice">Average Price</option>
+                        <option value="currentPrice">Current Price</option>
+                        <option value="investedValue">Invested Value</option>
+                        <option value="currentValue">Current Value</option>
+                        <option value="profitLoss">Profit/Loss</option>
+                        <option value="returnChange">Return %</option>
                     </select>
                 </div>
             </div>
@@ -177,7 +230,11 @@
                                 <th class="sortable" data-sort="industry">Industry <i class='bx bx-sort'></i></th>
                                 <th class="sortable" data-sort="quantity">Quantity <i class='bx bx-sort'></i></th>
                                 <th class="sortable" data-sort="avePrice">Avg Price <i class='bx bx-sort'></i></th>
+                                <th class="sortable" data-sort="currentPrice">Current Price <i class='bx bx-sort'></i></th>
                                 <th class="sortable" data-sort="investedValue">Invested Value <i class='bx bx-sort'></i></th>
+                                <th class="sortable" data-sort="currentValue">Current Value <i class='bx bx-sort'></i></th>
+                                <th class="sortable" data-sort="profitLoss">Profit/Loss <i class='bx bx-sort'></i></th>
+                                <th class="sortable" data-sort="returnChange">Return % <i class='bx bx-sort'></i></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -228,7 +285,7 @@
                         let bVal = b.children[getColumnIndex(column)].textContent.trim();
                         
                         // Convert to numbers if dealing with numeric columns
-                        if (['quantity', 'avePrice', 'investedValue'].includes(column)) {
+                        if (['quantity', 'avePrice', 'currentPrice', 'investedValue', 'currentValue', 'profitLoss'].includes(column)) {
                             aVal = parseFloat(aVal.replace(/[₹,]/g, ''));
                             bVal = parseFloat(bVal.replace(/[₹,]/g, ''));
                         }
@@ -257,7 +314,11 @@
                 'industry': 4,
                 'quantity': 5,
                 'avePrice': 6,
-                'investedValue': 7
+                'currentPrice': 7,
+                'investedValue': 8,
+                'currentValue': 9,
+                'profitLoss': 10,
+                'returnChange': 11
             };
             return columns[column];
         }
@@ -280,12 +341,31 @@
         }
 
         function updateSummaryCards(data) {
-            const totalInvestment = data.reduce((sum, stock) => sum + stock.investedValue, 0);
-            const uniqueIndustries = new Set(data.map(stock => stock.industry)).size;
+            // Calculate totals only for stocks with valid current prices
+            const validStocks = data.filter(stock => stock.currentPrice !== 0);
+            
+            const totalInvestment = validStocks.reduce((sum, stock) => sum + stock.investedValue, 0);
+            const totalCurrentValue = validStocks.reduce((sum, stock) => sum + (stock.quantity * stock.currentPrice), 0);
+            const totalProfitLoss = totalCurrentValue - totalInvestment;
+            const totalReturn = totalInvestment > 0 ? (totalProfitLoss / totalInvestment) * 100 : 0;
 
-            document.getElementById('totalInvestment').textContent = `₹${totalInvestment.toLocaleString('en-IN')}`;
+            document.getElementById('totalInvestment').textContent = 
+                '₹' + totalInvestment.toLocaleString('en-IN', {minimumFractionDigits: 2});
             document.getElementById('totalStocks').textContent = data.length;
-            document.getElementById('totalIndustries').textContent = uniqueIndustries;
+            document.getElementById('totalIndustries').textContent = 
+                new Set(data.map(stock => stock.industry).filter(Boolean)).size;
+            document.getElementById('totalCurrentValue').textContent = 
+                '₹' + totalCurrentValue.toLocaleString('en-IN', {minimumFractionDigits: 2});
+            
+            // Only show colors for profit/loss and return if we have valid current prices
+            const hasValidPrices = validStocks.length > 0;
+            const profitLossElement = document.getElementById('totalProfitLoss');
+            profitLossElement.textContent = '₹' + totalProfitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2});
+            profitLossElement.className = hasValidPrices ? (totalProfitLoss >= 0 ? 'text-success' : 'text-danger') : '';
+            
+            const returnElement = document.getElementById('totalReturn');
+            returnElement.textContent = totalReturn.toFixed(2) + '%';
+            returnElement.className = hasValidPrices ? (totalReturn >= 0 ? 'text-success' : 'text-danger') : '';
         }
 
         function populatePortfolioTable(data) {
@@ -294,6 +374,17 @@
 
             data.forEach((stock, index) => {
                 const row = document.createElement('tr');
+                
+                // Calculate current value and profit/loss only if current price is not 0
+                const currentValue = stock.currentPrice === 0 ? 0 : (stock.quantity * stock.currentPrice);
+                const profitLoss = stock.currentPrice === 0 ? 0 : (currentValue - stock.investedValue);
+                const returnPercentage = stock.currentPrice === 0 ? 0 : 
+                    (stock.investedValue > 0 ? (profitLoss / stock.investedValue) * 100 : 0);
+                
+                // Only add color classes if current price is not 0
+                const profitLossClass = stock.currentPrice === 0 ? '' : (profitLoss >= 0 ? 'text-success' : 'text-danger');
+                const returnChangeClass = stock.currentPrice === 0 ? '' : (returnPercentage >= 0 ? 'text-success' : 'text-danger');
+                
                 row.innerHTML = `
                     <td class="text-center">${index + 1}</td>
                     <td>${stock.symbol}</td>
@@ -302,10 +393,16 @@
                     <td>${stock.industry || '-'}</td>
                     <td>${Math.round(stock.quantity)}</td>
                     <td>₹${stock.avePrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td>₹${stock.currentPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td>₹${stock.investedValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td>₹${currentValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td class="${profitLossClass}">₹${profitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td class="${returnChangeClass}">${returnPercentage.toFixed(2)}%</td>
                 `;
                 tbody.appendChild(row);
             });
+
+            updateSummaryCards(data);
         }
 
         function setupSearchAndSort(originalData) {
@@ -329,9 +426,19 @@
                 // Sort
                 const sortBy = sortSelect.value;
                 filteredData.sort((a, b) => {
-                    if (sortBy === 'symbol') return a.symbol.localeCompare(b.symbol);
-                    if (sortBy === 'isin') return (a.isin || '').localeCompare(b.isin || '');
-                    if (sortBy === 'industry') return (a.industry || '').localeCompare(b.industry || '');
+                    // Handle text-based sorting
+                    if (['symbol', 'isin', 'industry', 'companyName'].includes(sortBy)) {
+                        return (a[sortBy] || '').localeCompare(b[sortBy] || '');
+                    }
+                    
+                    // Handle return percentage sorting separately
+                    if (sortBy === 'returnChange') {
+                        const aReturn = a.currentPrice === 0 ? 0 : a.returnChange;
+                        const bReturn = b.currentPrice === 0 ? 0 : b.returnChange;
+                        return bReturn - aReturn;
+                    }
+                    
+                    // Handle other numeric columns
                     return b[sortBy] - a[sortBy];
                 });
 
