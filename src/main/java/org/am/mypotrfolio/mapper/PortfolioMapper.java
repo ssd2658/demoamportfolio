@@ -32,19 +32,31 @@ public interface PortfolioMapper {
     @Mapping(source = "investedValue", target = "investedValue", qualifiedByName = "stringToDouble")
     NseStock toNseStock(MStockPortfolio stockPortfolio);
 
-    @Mapping(source = "name", target = "symbol", qualifiedByName = "getSymbol")
+    @Mapping(source = "securityId", target = "symbol")
     @Mapping(source = "quantity", target = "quantity")
     @Mapping(source = "avgPrice", target = "avePrice")
-    @Mapping(source = "investment", target = "investedValue")
-    NseStock mapNseStock(DhanStockPortfolio dhanStockPortfolio, @Context List<Company> companies);
+    @Mapping(expression = "java(stock.getQuantity() * stock.getAvgPrice())", target = "investedValue")
+    @Mapping(source = "isin", target = "isin")
+    NseStock toNseStockFromDhan(DhanStockPortfolio stock);
+
+    @Mapping(source = "securityId", target = "symbol")
+    @Mapping(source = "quantity", target = "quantity")
+    @Mapping(source = "avgPrice", target = "avePrice")
+    @Mapping(expression = "java(stock.getQuantity() * stock.getAvgPrice())", target = "investedValue")
+    NseStock mapNseStock(DhanStockPortfolio stock);
 
     @Named("stringToDouble")
     default double stringToDouble(String value) {
         return value == null || value.isEmpty() ? 0.0 : Double.parseDouble(value);
     }
 
+    @Named("getISIN")
+    default String getISIN(String name) {
+        return findKeyByValue(convertToSymbolMap(companies), name);
+    }
+
     @Named("getSymbol")
-    default String getSymbol(String name, @Context List<Company> companies) {
+    default String getSymbol(String name) {
         return findKeyByValue(convertToSymbolMap(companies), name);
     }
 

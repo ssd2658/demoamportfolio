@@ -6,6 +6,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.am.mypotrfolio.domain.NseStock;
+import org.am.mypotrfolio.domain.NseStockDetails;
 import org.am.mypotrfolio.domain.SectorInvestmentDTO;
 import org.am.mypotrfolio.entity.NseStockEntity;
 // import org.am.mypotrfolio.exceptions.ApiSubError;
@@ -47,6 +48,7 @@ import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -99,7 +101,15 @@ public class PortfolioController {
             required = true, 
             content = @Content(mediaType = "multipart/form-data")
         ) @RequestParam("file") MultipartFile file) throws IOException {
-        return Flux.just(dhanPortfolioService.processNseStock(file));
+        log.info("Processing Dhan portfolio file: {}", file.getOriginalFilename());
+        try {
+            var result = dhanPortfolioService.processNseStock(file);
+            log.info("Successfully processed Dhan portfolio with {} stocks", result.size());
+            return Flux.just(result);
+        } catch (Exception e) {
+            log.error("Error processing Dhan portfolio file: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @PostMapping("/mstock")
@@ -127,7 +137,15 @@ public class PortfolioController {
             required = true, 
             content = @Content(mediaType = "multipart/form-data")
         ) @RequestParam("file") MultipartFile file) throws IOException {
-        return Flux.just(mStockPortfolioService.processNseStock(file));
+        log.info("Processing MStock portfolio file: {}", file.getOriginalFilename());
+        try {
+            var result = mStockPortfolioService.processNseStock(file);
+            log.info("Successfully processed MStock portfolio with {} stocks", result.size());
+            return Flux.just(result);
+        } catch (Exception e) {
+            log.error("Error processing MStock portfolio file: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @PostMapping("/zerodha")
@@ -155,7 +173,15 @@ public class PortfolioController {
             required = true, 
             content = @Content(mediaType = "multipart/form-data")
         ) @RequestParam("file") MultipartFile file) throws IOException {
-        return Flux.just(zerodhaPortfolioService.processNseStock(file));
+        log.info("Processing Zerodha portfolio file: {}", file.getOriginalFilename());
+        try {
+            var result = zerodhaPortfolioService.processNseStock(file);
+            log.info("Successfully processed Zerodha portfolio with {} stocks", result.size());
+            return Flux.just(result);
+        } catch (Exception e) {
+            log.error("Error processing Zerodha portfolio file: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     // @PostMapping("/test")
@@ -215,7 +241,32 @@ public class PortfolioController {
         @Parameter(description = "Maximum number of records to return") 
         @RequestParam("maxCount") Integer maxCount
     ) {
-        return testPortfolioService.getNseStocks(filterBy, maxCount);
+        log.info("Retrieving portfolio with filter: {} and maxCount: {}", filterBy, maxCount);
+        try {
+            var result = testPortfolioService.getNseStocks(filterBy, maxCount);
+            log.info("Successfully retrieved {} portfolio entries", result.size());
+            return result;
+        } catch (Exception e) {
+            log.error("Error retrieving portfolio: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    @GetMapping("/api/v1/portfolio/stocks")
+    @Operation(summary = "Get all NSE stock details for a user")
+    @ApiResponse(
+        responseCode = "200",
+        description = "Successfully retrieved stock details",
+        content = @Content(
+            mediaType = "application/json",
+            array = @ArraySchema(schema = @Schema(implementation = NseStockDetails.class))
+        )
+    )
+    public ResponseEntity<List<NseStockDetails>> getUserStocks(
+            @Parameter(description = "Username to fetch stocks for") 
+            @RequestParam("username") String username) {
+        List<NseStockDetails> stockDetails = testService.getAllStocksByUserId(username);
+        return ResponseEntity.ok(stockDetails);
     }
 
     @PostMapping("/download")
@@ -233,9 +284,17 @@ public class PortfolioController {
     )
     @ResponseStatus(code = HttpStatus.OK)
     public ResponseEntity<ByteArrayResource> download() throws IOException {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(CONTENT_DISPOSITION, Constant.ATTACHMENT_FILENAME_COMPANY_TEMPLATE_XLSX + Constant.EXCEL_FILENAME);
-        return new ResponseEntity<>(testService.generateRoutingListExcel(),  headers, HttpStatus.OK);
+        log.info("Starting routing list download");
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(CONTENT_DISPOSITION, Constant.ATTACHMENT_FILENAME_COMPANY_TEMPLATE_XLSX + Constant.EXCEL_FILENAME);
+            var resource = testService.generateRoutingListExcel();
+            log.info("Successfully generated routing list excel file");
+            return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error generating routing list excel: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @PostMapping("/download-portfolio")
@@ -253,9 +312,17 @@ public class PortfolioController {
     )
     @ResponseStatus(code = HttpStatus.OK)
     public ResponseEntity<ByteArrayResource> downloadPortfolio() throws IOException {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(CONTENT_DISPOSITION, Constant.ATTACHMENT_FILENAME_COMPANY_TEMPLATE_XLSX + Constant.EXCEL_PORTFOLIO_FILENAME);
-        return new ResponseEntity<>(testService.generatePortfolioListExcel(),  headers, HttpStatus.OK);
+        log.info("Starting portfolio list download");
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(CONTENT_DISPOSITION, Constant.ATTACHMENT_FILENAME_COMPANY_TEMPLATE_XLSX + Constant.EXCEL_PORTFOLIO_FILENAME);
+            var resource = testService.generatePortfolioListExcel();
+            log.info("Successfully generated portfolio list excel file");
+            return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error generating portfolio list excel: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @PostMapping("/upload-mutualcompany-data/{path}")
@@ -275,6 +342,13 @@ public class PortfolioController {
         @Parameter(description = "File path for mutual company data") 
         @PathVariable("path") String path
     ) {
-        mutualFundService.uploadMutualFundFiles(path);
+        log.info("Starting mutual company data upload from path: {}", path);
+        try {
+            mutualFundService.uploadMutualFundFiles(path);
+            log.info("Successfully processed mutual company data from path: {}", path);
+        } catch (Exception e) {
+            log.error("Error processing mutual company data: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 }

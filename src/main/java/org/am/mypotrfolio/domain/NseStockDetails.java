@@ -29,8 +29,9 @@ public class NseStockDetails {
     private double percentChange;
     private double returnChange;
     private UUID id;
-
     private String brokerPlatform;
+    private String isin;
+    private String brokerPlatforms; // Comma-separated list of broker platforms
     @JsonIgnore
     private String tradeType;
     @JsonIgnore
@@ -55,6 +56,19 @@ public class NseStockDetails {
         this.currentPrice = currentPrice != null ? currentPrice : avePrice;
         this.currentValue = quantity * this.currentPrice;
         this.openPrice = openPrice != null ? openPrice : this.currentPrice;
+    }
+
+    // Constructor for aggregated stock details
+    public NseStockDetails(String symbol, String isin, double quantity, double investedValue, 
+                          double avePrice, String industry, String companyName) {
+        this.symbol = symbol;
+        this.isin = isin;
+        this.quantity = quantity;
+        this.investedValue = investedValue;
+        this.avePrice = avePrice;
+        //this.brokerPlatforms = brokerPlatforms;
+        this.industry = industry;
+        this.companyName = companyName;
     }
 
     public double getTotalInvestment() {

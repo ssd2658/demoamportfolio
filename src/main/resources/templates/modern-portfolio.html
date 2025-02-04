@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Portfolio Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #858796;
+            --success-color: #1cc88a;
+            --info-color: #36b9cc;
+            --warning-color: #f6c23e;
+            --danger-color: #e74a3b;
+        }
+        
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+
+        .card-header {
+            background-color: #f8f9fc;
+            border-bottom: 1px solid #e3e6f0;
+        }
+
+        .table th {
+            font-weight: 600;
+            background-color: #f8f9fc;
+        }
+
+        .profit {
+            color: var(--success-color);
+        }
+
+        .loss {
+            color: var(--danger-color);
+        }
+
+        .summary-card {
+            transition: transform 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+        .sortable:hover {
+            background-color: #f1f3f9;
+        }
+        .sortable i {
+            margin-left: 5px;
+            opacity: 0.3;
+        }
+        .sortable.asc i {
+            opacity: 1;
+            transform: rotate(180deg);
+        }
+        .sortable.desc i {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div class="container-fluid py-4">
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2 summary-card">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Investment</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalInvestment">₹0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class='bx bx-rupee fs-2'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2 summary-card">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Stocks</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalStocks">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class='bx bx-bar-chart-alt-2 fs-2'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2 summary-card">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Industries</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalIndustries">0</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class='bx bx-building-house fs-2'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Table -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Portfolio Holdings</h6>
+                <div class="d-flex align-items-center">
+                    <input type="text" class="form-control form-control-sm mr-2" id="searchInput" placeholder="Search...">
+                    <select class="form-select form-select-sm ms-2" id="sortSelect">
+                        <option value="symbol">Symbol</option>
+                        <option value="isin">ISIN</option>
+                        <option value="investedValue">Invested Value</option>
+                        <option value="quantity">Quantity</option>
+                        <option value="industry">Industry</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="portfolioTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">Sr No</th>
+                                <th class="sortable" data-sort="symbol">Symbol <i class='bx bx-sort'></i></th>
+                                <th class="sortable" data-sort="isin">ISIN <i class='bx bx-sort'></i></th>
+                                <th class="sortable" data-sort="companyName">Company Name <i class='bx bx-sort'></i></th>
+                                <th class="sortable" data-sort="industry">Industry <i class='bx bx-sort'></i></th>
+                                <th class="sortable" data-sort="quantity">Quantity <i class='bx bx-sort'></i></th>
+                                <th class="sortable" data-sort="avePrice">Avg Price <i class='bx bx-sort'></i></th>
+                                <th class="sortable" data-sort="investedValue">Invested Value <i class='bx bx-sort'></i></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentSort = {
+            column: 'symbol',
+            direction: 'asc'
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPortfolioData();
+            setupColumnSorting();
+        });
+
+        function setupColumnSorting() {
+            const headers = document.querySelectorAll('.sortable');
+            headers.forEach(header => {
+                header.addEventListener('click', () => {
+                    const column = header.dataset.sort;
+                    
+                    // Reset all headers
+                    headers.forEach(h => h.classList.remove('asc', 'desc'));
+                    
+                    if (currentSort.column === column) {
+                        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        currentSort.column = column;
+                        currentSort.direction = 'asc';
+                    }
+                    
+                    // Add sort class
+                    header.classList.add(currentSort.direction);
+                    
+                    // Re-sort the table
+                    const tbody = document.querySelector('#portfolioTable tbody');
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    
+                    rows.sort((a, b) => {
+                        let aVal = a.children[getColumnIndex(column)].textContent.trim();
+                        let bVal = b.children[getColumnIndex(column)].textContent.trim();
+                        
+                        // Convert to numbers if dealing with numeric columns
+                        if (['quantity', 'avePrice', 'investedValue'].includes(column)) {
+                            aVal = parseFloat(aVal.replace(/[₹,]/g, ''));
+                            bVal = parseFloat(bVal.replace(/[₹,]/g, ''));
+                        }
+                        
+                        if (currentSort.direction === 'asc') {
+                            return aVal > bVal ? 1 : -1;
+                        } else {
+                            return aVal < bVal ? 1 : -1;
+                        }
+                    });
+                    
+                    // Re-append sorted rows and update serial numbers
+                    rows.forEach((row, index) => {
+                        row.children[0].textContent = index + 1;
+                        tbody.appendChild(row);
+                    });
+                });
+            });
+        }
+
+        function getColumnIndex(column) {
+            const columns = {
+                'symbol': 1,
+                'isin': 2,
+                'companyName': 3,
+                'industry': 4,
+                'quantity': 5,
+                'avePrice': 6,
+                'investedValue': 7
+            };
+            return columns[column];
+        }
+
+        async function loadPortfolioData() {
+            try {
+                const username = 'MKU257';
+                const response = await fetch(`/api/portfolio/api/v1/portfolio/stocks?username=${username}`);
+                const data = await response.json();
+                
+                updateSummaryCards(data);
+                populatePortfolioTable(data);
+                setupSearchAndSort(data);
+                
+                document.querySelector('.loading').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading portfolio data:', error);
+                document.querySelector('.loading').style.display = 'none';
+            }
+        }
+
+        function updateSummaryCards(data) {
+            const totalInvestment = data.reduce((sum, stock) => sum + stock.investedValue, 0);
+            const uniqueIndustries = new Set(data.map(stock => stock.industry)).size;
+
+            document.getElementById('totalInvestment').textContent = `₹${totalInvestment.toLocaleString('en-IN')}`;
+            document.getElementById('totalStocks').textContent = data.length;
+            document.getElementById('totalIndustries').textContent = uniqueIndustries;
+        }
+
+        function populatePortfolioTable(data) {
+            const tbody = document.querySelector('#portfolioTable tbody');
+            tbody.innerHTML = '';
+
+            data.forEach((stock, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="text-center">${index + 1}</td>
+                    <td>${stock.symbol}</td>
+                    <td>${stock.isin || '-'}</td>
+                    <td>${stock.companyName || '-'}</td>
+                    <td>${stock.industry || '-'}</td>
+                    <td>${Math.round(stock.quantity)}</td>
+                    <td>₹${stock.avePrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td>₹${stock.investedValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function setupSearchAndSort(originalData) {
+            const searchInput = document.getElementById('searchInput');
+            const sortSelect = document.getElementById('sortSelect');
+
+            function filterAndSortData() {
+                let filteredData = [...originalData];
+
+                // Filter
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm) {
+                    filteredData = filteredData.filter(stock => 
+                        stock.symbol.toLowerCase().includes(searchTerm) ||
+                        (stock.companyName && stock.companyName.toLowerCase().includes(searchTerm)) ||
+                        (stock.industry && stock.industry.toLowerCase().includes(searchTerm)) ||
+                        (stock.isin && stock.isin.toLowerCase().includes(searchTerm))
+                    );
+                }
+
+                // Sort
+                const sortBy = sortSelect.value;
+                filteredData.sort((a, b) => {
+                    if (sortBy === 'symbol') return a.symbol.localeCompare(b.symbol);
+                    if (sortBy === 'isin') return (a.isin || '').localeCompare(b.isin || '');
+                    if (sortBy === 'industry') return (a.industry || '').localeCompare(b.industry || '');
+                    return b[sortBy] - a[sortBy];
+                });
+
+                populatePortfolioTable(filteredData);
+            }
+
+            searchInput.addEventListener('input', filterAndSortData);
+            sortSelect.addEventListener('change', filterAndSortData);
+        }
+    </script>
+</body>
+</html>

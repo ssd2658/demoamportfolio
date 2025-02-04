@@ -146,4 +146,42 @@ public interface NseStockRepository extends JpaRepository<NseStockEntity, UUID> 
             "WHERE LOWER(n.brokerPlatform) = LOWER(:brokerPlatform) " +
             "GROUP BY e.industry")
     List<SectorInvestmentDTO> getSectorInvestments(@Param("brokerPlatform") String brokerPlatform);
+
+    @Query("SELECT new org.am.mypotrfolio.domain.NseStockDetails(" +
+           "n.symbol, " +
+           "n.isin, " +
+           "SUM(n.quantity), " +
+           "SUM(n.investedValue), " +
+           "CASE WHEN SUM(n.quantity) > 0 THEN SUM(n.investedValue) / SUM(n.quantity) ELSE 0 END, " +
+           "e.industry, " +
+           "e.name) " +
+           "FROM NseStockEntity n " +
+           "LEFT JOIN EquityDataEntity e ON n.symbol = e.symbol " +
+           "WHERE n.userId = :userId " +
+           "AND n.createdDate IN (" +
+           "    SELECT MAX(n2.createdDate) " +
+           "    FROM NseStockEntity n2 " +
+           "    WHERE n2.userId = n.userId " +
+           "    AND n2.brokerPlatform = n.brokerPlatform " +
+           "    AND n2.symbol = n.symbol " +
+           "    GROUP BY n2.brokerPlatform, n2.symbol" +
+           ") " +
+           "GROUP BY n.symbol, n.isin, e.industry, e.name")
+    List<NseStockDetails> getAggregatedStocksByUserId(@Param("userId") String userId);
+
+    //     public NseStockDetails(String symbol, String isin, double quantity, double investedValue, 
+    //     double avePrice, String brokerPlatforms, String industry, String companyName)
+
+    default List<NseStockDetails> enrichStockDetailsWithEquityData(List<NseStockDetails> stockDetails) {
+        return stockDetails.stream()
+                .map(stock -> {
+                    Optional<EquityDataEntity> equityData = findBySymbol(stock.getSymbol());
+                    equityData.ifPresent(equity -> {
+                        stock.setIndustry(equity.getIndustry());
+                        stock.setCompanyName(equity.getName());
+                    });
+                    return stock;
+                })
+                .collect(Collectors.toList());
+    }
 }

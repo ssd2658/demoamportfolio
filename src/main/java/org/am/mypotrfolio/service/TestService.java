@@ -110,6 +110,12 @@ public class TestService {
         return nseStockRepository.getInvestedStock();
     }
 
+    public List<NseStockDetails> getAllStocksByUserId(String userId) {
+        List<NseStockDetails> stockDetails = nseStockRepository.getAggregatedStocksByUserId(userId);
+    
+       return nseStockRepository.enrichStockDetailsWithEquityData(stockDetails);
+   }
+
     public List<NseStockDetails> getAllStocks(String brokerPlatform) {
         return getStocksByBrokerPlatform(brokerPlatform);
     }
