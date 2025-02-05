@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -31,4 +32,20 @@ public class Portfolio {
     
     private int totalStocks;
     private int totalIndustries;
+    
+    // Add sector allocation data
+    private Map<String, SectorAllocation> sectorAllocations;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SectorAllocation {
+        private String sector;
+        private double investedAmount;
+        private double currentValue;
+        private double allocationPercentage;
+        private int numberOfStocks;
+        private List<NseStockDetails> stocks;
+    }
 }

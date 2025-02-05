@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
         :root {
             --primary-color: #4e73df;
@@ -85,6 +86,48 @@
         }
         .sortable.desc i {
             color: #000;
+        }
+        
+        .sector-header {
+            cursor: pointer;
+            padding: 1rem;
+            background-color: #f8f9fc;
+            border-radius: 0.35rem;
+            margin-bottom: 0.5rem;
+        }
+        .sector-header:hover {
+            background-color: #eaecf4;
+        }
+        .stock-row:hover {
+            background-color: #f8f9fc;
+        }
+        .progress {
+            height: 20px;
+            background-color: #eaecf4;
+        }
+        .progress-bar {
+            line-height: 20px;
+            font-size: 12px;
+            min-width: 2%; /* Ensure very small percentages are at least visible */
+        }
+        .percentage-text {
+            font-weight: bold;
+            color: #4e73df;
+            margin-left: 8px;
+        }
+        .small-percentage {
+            min-width: 30px;
+            text-align: right;
+            display: inline-block;
+        }
+        .progress-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .progress-wrapper {
+            flex-grow: 1;
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -243,6 +286,31 @@
             </div>
         </div>
 
+        <!-- Sector Allocation Row -->
+        <div class="row mb-4">
+            <div class="col-xl-12">
+                <div class="card shadow">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">Sector-wise Portfolio Analysis</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Sector Chart -->
+                            <div class="col-xl-4">
+                                <canvas id="sectorAllocationChart"></canvas>
+                            </div>
+                            <!-- Sector Details -->
+                            <div class="col-xl-8">
+                                <div class="accordion" id="sectorAccordion">
+                                    <!-- Sectors will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Top Performers and Losers Row -->
         <div class="row">
             <!-- Top Performers -->
@@ -349,6 +417,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         let currentSort = {
             column: 'symbol',
@@ -458,6 +527,8 @@
                     populateTopLosersTable(portfolio.topLosers);
                 }
 
+                // Update sector allocation
+                updateSectorAllocation(portfolio);
             } catch (error) {
                 console.error('Error loading portfolio data:', error);
                 const errorMessage = document.createElement('div');
@@ -686,6 +757,173 @@
 
             searchInput.addEventListener('input', filterAndSortData);
             sortSelect.addEventListener('change', filterAndSortData);
+        }
+
+        function updateSectorAllocation(portfolio) {
+            const accordion = document.querySelector('#sectorAccordion');
+            accordion.innerHTML = '';
+            
+            const sectorData = Object.values(portfolio.sectorAllocations || {});
+            
+            // Sort sectors by allocation percentage
+            sectorData.sort((a, b) => b.allocationPercentage - a.allocationPercentage);
+            
+            // Create sector cards
+            sectorData.forEach((sector, index) => {
+                const sectorId = `sector-${index}`;
+                const sectorCard = document.createElement('div');
+                sectorCard.className = 'card mb-2';
+                
+                // Sort stocks within sector by allocation
+                sector.stocks.sort((a, b) => {
+                    const aValue = a.investedValue;
+                    const bValue = b.investedValue;
+                    return bValue - aValue;
+                });
+
+                // Calculate stock allocations within sector
+                const sectorTotal = sector.investedAmount;
+                sector.stocks.forEach(stock => {
+                    stock.sectorAllocationPercentage = (stock.investedValue / sectorTotal) * 100;
+                });
+
+                sectorCard.innerHTML = `
+                    <div class="sector-header" data-bs-toggle="collapse" data-bs-target="#${sectorId}">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <h6 class="mb-0">${sector.sector}</h6>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="progress-container">
+                                    <div class="progress-wrapper">
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: ${Math.max(2, sector.allocationPercentage)}%"
+                                                 aria-valuenow="${sector.allocationPercentage}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="small-percentage">${sector.allocationPercentage.toFixed(2)}%</span>
+                                </div>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <span class="badge bg-primary">${sector.numberOfStocks} stocks</span>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <small>Invested: ₹${sector.investedAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <small>Current: ₹${sector.currentValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="${sectorId}" class="collapse" data-bs-parent="#sectorAccordion">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Stock</th>
+                                            <th>Invested Amount</th>
+                                            <th>Current Value</th>
+                                            <th>% of Sector</th>
+                                            <th>% of Portfolio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${sector.stocks.map(stock => `
+                                            <tr class="stock-row">
+                                                <td>${stock.symbol} - ${stock.companyName || ''}</td>
+                                                <td>₹${stock.investedValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                                                <td>₹${(stock.currentPrice * stock.quantity).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                                                <td>
+                                                    <div class="progress-container">
+                                                        <div class="progress-wrapper">
+                                                            <div class="progress">
+                                                                <div class="progress-bar bg-info" role="progressbar" 
+                                                                     style="width: ${Math.max(2, stock.sectorAllocationPercentage)}%"
+                                                                     aria-valuenow="${stock.sectorAllocationPercentage}" 
+                                                                     aria-valuemin="0" 
+                                                                     aria-valuemax="100">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <span class="small-percentage">${stock.sectorAllocationPercentage.toFixed(2)}%</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="progress-container">
+                                                        <div class="progress-wrapper">
+                                                            <div class="progress">
+                                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                                     style="width: ${Math.max(2, (stock.investedValue / portfolio.totalInvestment * 100))}%"
+                                                                     aria-valuenow="${(stock.investedValue / portfolio.totalInvestment * 100)}" 
+                                                                     aria-valuemin="0" 
+                                                                     aria-valuemax="100">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <span class="small-percentage">${(stock.investedValue / portfolio.totalInvestment * 100).toFixed(2)}%</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                accordion.appendChild(sectorCard);
+            });
+
+            // Update sector allocation chart
+            const ctx = document.getElementById('sectorAllocationChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (sectorChart) {
+                sectorChart.destroy();
+            }
+            
+            // Create new chart
+            sectorChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: sectorData.map(sector => `${sector.sector} (${sector.allocationPercentage.toFixed(2)}%)`),
+                    datasets: [{
+                        data: sectorData.map(sector => sector.allocationPercentage),
+                        backgroundColor: [
+                            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                            '#858796', '#5a5c69', '#2e59d9', '#17a673', '#2c9faf'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Sector-wise Portfolio Allocation',
+                            padding: {
+                                top: 10,
+                                bottom: 30
+                            }
+                        }
+                    }
+                }
+            });
         }
     </script>
     <script>
