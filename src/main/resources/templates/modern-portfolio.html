@@ -88,46 +88,210 @@
             color: #000;
         }
         
+        .sector-content {
+            border-right: 1px solid #e3e6f0;
+            padding: 0.5rem;
+            height: 100%;
+            max-height: 600px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+        .sector-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sector-content::-webkit-scrollbar-track {
+            background: #f8f9fc;
+        }
+        .sector-content::-webkit-scrollbar-thumb {
+            background-color: #dddfeb;
+            border-radius: 3px;
+        }
+        .sector-content::-webkit-scrollbar-thumb:hover {
+            background-color: #858796;
+        }
         .sector-header {
             cursor: pointer;
-            padding: 1rem;
+            padding: 0.75rem;
             background-color: #f8f9fc;
             border-radius: 0.35rem;
             margin-bottom: 0.5rem;
+            border-bottom: 1px solid #e3e6f0;
+            transition: all 0.2s ease-in-out;
         }
-        .sector-header:hover {
-            background-color: #eaecf4;
-        }
-        .stock-row:hover {
-            background-color: #f8f9fc;
-        }
-        .progress {
-            height: 20px;
-            background-color: #eaecf4;
-        }
-        .progress-bar {
-            line-height: 20px;
-            font-size: 12px;
-            min-width: 2%; /* Ensure very small percentages are at least visible */
-        }
-        .percentage-text {
-            font-weight: bold;
+        .more-sectors {
+            text-align: center;
+            padding: 10px;
             color: #4e73df;
-            margin-left: 8px;
+            font-weight: 500;
+            border-top: 1px solid #e3e6f0;
+            margin-top: 10px;
         }
-        .small-percentage {
-            min-width: 30px;
-            text-align: right;
-            display: inline-block;
+        .sector-hidden {
+            display: none;
         }
-        .progress-container {
+        .chart-container {
+            position: relative;
+            height: 280px;
+            width: 100%;
+            border-right: 1px solid #e3e6f0;
+            padding: 1rem;
+        }
+        .chart-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fc;
+            border-radius: 0.35rem;
+        }
+        .chart-legend {
+            font-size: 0.95rem;
+            color: #5a5c69;
+        }
+        .chart-legend-item {
             display: flex;
             align-items: center;
-            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        .chart-legend-color {
+            width: 12px;
+            height: 12px;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+        .chart-legend-text {
+            font-weight: 500;
+        }
+        .stock-table {
+            margin: 0;
+            font-size: 0.85rem;
+        }
+        .stock-table th {
+            background-color: #f8f9fc;
+            border-top: none;
+            font-weight: 600;
+            color: #4e73df;
+            padding: 0.75rem;
+            white-space: nowrap;
+        }
+        .stock-table td {
+            padding: 0.75rem;
+            vertical-align: middle;
+        }
+        .performance-section {
+            padding: 0.5rem;
+        }
+        .performance-card {
+            margin-bottom: 1rem;
+            border: 1px solid #e3e6f0;
+            border-radius: 0.35rem;
+            overflow: hidden;
+        }
+        .performance-card:last-child {
+            margin-bottom: 0;
+        }
+        .performance-card .card-header {
+            background: none;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e3e6f0;
+        }
+        .stock-name {
+            font-weight: 600;
+            color: #5a5c69;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .return-positive {
+            color: #1cc88a;
+            font-weight: 600;
+        }
+        .return-negative {
+            color: #e74a3b;
+            font-weight: 600;
+        }
+        .pl-value {
+            font-weight: 600;
+        }
+        .pl-positive {
+            color: #1cc88a;
+        }
+        .pl-negative {
+            color: #e74a3b;
+        }
+        .combined-card {
+            height: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+        .combined-card .card-body {
+            padding: 0;
+        }
+        .combined-content {
+            display: flex;
+            height: 100%;
+        }
+        .section {
+            padding: 1rem;
+        }
+        .section-chart {
+            width: 25%;
+        }
+        .section-breakdown {
+            width: 50%;
+        }
+        .section-performance {
+            width: 25%;
+        }
+        .stock-table {
+            margin: 0;
+        }
+        .stock-table th {
+            background-color: #f8f9fc;
+            border-top: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #4e73df;
+        }
+        .stock-table td {
+            vertical-align: middle;
+            font-size: 0.875rem;
+        }
+        .profit {
+            color: #1cc88a;
+            font-weight: 600;
+        }
+        .loss {
+            color: #e74a3b;
+            font-weight: 600;
         }
         .progress-wrapper {
             flex-grow: 1;
             margin-right: 10px;
+            height: 8px;
+        }
+        .progress {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #eaecf4;
+        }
+        .progress-bar {
+            border-radius: 4px;
+        }
+        .small-percentage {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #5a5c69;
+        }
+        .sector-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #858796;
+        }
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
         }
     </style>
 </head>
@@ -286,23 +450,81 @@
             </div>
         </div>
 
-        <!-- Sector Allocation Row -->
-        <div class="row mb-4">
-            <div class="col-xl-12">
-                <div class="card shadow">
-                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-primary">Sector-wise Portfolio Analysis</h6>
+        <!-- Combined Section -->
+        <div class="col-12">
+            <div class="card shadow combined-card">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Portfolio Analysis</h6>
+                    <div class="header-stats">
+                        <span class="mr-3">Total Investment: ₹<span id="totalInvestment">0</span></span>
+                        <span>Current Value: ₹<span id="currentValue">0</span></span>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <!-- Sector Chart -->
-                            <div class="col-xl-4">
+                </div>
+                <div class="card-body">
+                    <div class="combined-content">
+                        <!-- Left - Sector Chart -->
+                        <div class="section section-chart">
+                            <div class="chart-container">
                                 <canvas id="sectorAllocationChart"></canvas>
                             </div>
-                            <!-- Sector Details -->
-                            <div class="col-xl-8">
+                        </div>
+
+                        <!-- Middle - Sector Breakdown -->
+                        <div class="section section-breakdown">
+                            <div class="sector-content">
                                 <div class="accordion" id="sectorAccordion">
                                     <!-- Sectors will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right - Performance Tables -->
+                        <div class="section section-performance">
+                            <div class="performance-section">
+                                <!-- Top Performers -->
+                                <div class="performance-card">
+                                    <div class="card-header">
+                                        <h6 class="m-0 font-weight-bold text-success">Top Performers</h6>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover mb-0 stock-table" id="topPerformersTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Stock</th>
+                                                        <th>Current Price</th>
+                                                        <th>P/L</th>
+                                                        <th>Return %</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Top Losers -->
+                                <div class="performance-card">
+                                    <div class="card-header">
+                                        <h6 class="m-0 font-weight-bold text-danger">Top Losers</h6>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover mb-0 stock-table" id="topLosersTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Stock</th>
+                                                        <th>Current Price</th>
+                                                        <th>P/L</th>
+                                                        <th>Return %</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -311,109 +533,48 @@
             </div>
         </div>
 
-        <!-- Top Performers and Losers Row -->
-        <div class="row">
-            <!-- Top Performers -->
-            <div class="col-xl-6 col-lg-6">
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-success">Top Performers</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover" id="topPerformersTable">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Symbol</th>
-                                        <th>Company Name</th>
-                                        <th>Quantity</th>
-                                        <th>Avg Price</th>
-                                        <th>Current Price</th>
-                                        <th>Profit/Loss</th>
-                                        <th>Return %</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+        <!-- Portfolio Table -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">Portfolio Details</h6>
+                <div class="d-flex align-items-center">
+                    <input type="text" id="searchInput" class="form-control form-control-sm mr-2" placeholder="Search...">
+                    <select id="sortSelect" class="form-control form-control-sm">
+                        <option value="symbol">Symbol</option>
+                        <option value="companyName">Company Name</option>
+                        <option value="industry">Industry</option>
+                        <option value="quantity">Quantity</option>
+                        <option value="currentPrice">Current Price</option>
+                        <option value="investedValue">Invested Value</option>
+                        <option value="returnChange">Return %</option>
+                    </select>
                 </div>
             </div>
-
-            <!-- Top Losers -->
-            <div class="col-xl-6 col-lg-6">
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-danger">Top Losers</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover" id="topLosersTable">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Symbol</th>
-                                        <th>Company Name</th>
-                                        <th>Quantity</th>
-                                        <th>Avg Price</th>
-                                        <th>Current Price</th>
-                                        <th>Profit/Loss</th>
-                                        <th>Return %</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="portfolioTable">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="index"># <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="symbol">Symbol <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="isin">ISIN <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="companyName">Company Name <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="industry">Industry <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="quantity">Quantity <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="avgPrice">Avg Price <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="currentPrice">Current Price <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="investedValue">Invested Value <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="currentValue">Current Value <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="profitLoss">Profit/Loss <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="returnPercentage">Return % <i class="fas fa-sort"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-
-                <!-- Portfolio Table -->
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-primary">Portfolio Details</h6>
-                        <div class="d-flex align-items-center">
-                            <input type="text" id="searchInput" class="form-control form-control-sm mr-2" placeholder="Search...">
-                            <select id="sortSelect" class="form-control form-control-sm">
-                                <option value="symbol">Symbol</option>
-                                <option value="companyName">Company Name</option>
-                                <option value="industry">Industry</option>
-                                <option value="quantity">Quantity</option>
-                                <option value="currentPrice">Current Price</option>
-                                <option value="investedValue">Invested Value</option>
-                                <option value="returnChange">Return %</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover" id="portfolioTable">
-                                <thead>
-                                    <tr>
-                                        <th class="sortable" data-sort="index"># <i class="fas fa-sort"></i></th>
-                                        <th class="sortable" data-sort="symbol">Symbol <i class="fas fa-sort"></i></th>
-                                        <th class="sortable" data-sort="isin">ISIN <i class="fas fa-sort"></i></th>
-                                        <th class="sortable" data-sort="companyName">Company Name <i class="fas fa-sort"></i></th>
-                                        <th class="sortable" data-sort="industry">Industry <i class="fas fa-sort"></i></th>
-                                        <th class="sortable" data-sort="quantity">Quantity <i class="fas fa-sort"></i></th>
-                                        <th class="sortable" data-sort="avgPrice">Avg Price <i class="fas fa-sort"></i></th>
-                                        <th class="sortable" data-sort="currentPrice">Current Price <i class="fas fa-sort"></i></th>
-                                        <th class="sortable" data-sort="investedValue">Invested Value <i class="fas fa-sort"></i></th>
-                                        <th class="sortable" data-sort="currentValue">Current Value <i class="fas fa-sort"></i></th>
-                                        <th class="sortable" data-sort="profitLoss">Profit/Loss <i class="fas fa-sort"></i></th>
-                                        <th class="sortable" data-sort="returnPercentage">Return % <i class="fas fa-sort"></i></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -423,6 +584,8 @@
             column: 'symbol',
             direction: 'asc'
         };
+        let portfolioData = [];
+        let sectorChart = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             loadPortfolioData();
@@ -673,11 +836,8 @@
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${index + 1}</td>
+                    
                     <td>${stock.symbol || ''}</td>
-                    <td>${stock.companyName || ''}</td>
-                    <td>${quantity}</td>
-                    <td>₹${avgPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td>₹${currentPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td class="text-success">₹${profitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td class="text-success">${returnPercentage.toFixed(2)}%</td>
@@ -702,11 +862,9 @@
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${index + 1}</td>
+                   
                     <td>${stock.symbol || ''}</td>
-                    <td>${stock.companyName || ''}</td>
-                    <td>${quantity}</td>
-                    <td>₹${avgPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                   
                     <td>₹${currentPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td class="text-danger">₹${profitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td class="text-danger">${returnPercentage.toFixed(2)}%</td>
@@ -760,99 +918,103 @@
         }
 
         function updateSectorAllocation(portfolio) {
+            if (!portfolio) {
+                console.error('Portfolio data is undefined');
+                return;
+            }
+
             const accordion = document.querySelector('#sectorAccordion');
             accordion.innerHTML = '';
             
             const sectorData = Object.values(portfolio.sectorAllocations || {});
-            
-            // Sort sectors by allocation percentage
             sectorData.sort((a, b) => b.allocationPercentage - a.allocationPercentage);
             
-            // Create sector cards
+            // Update total investment and current value with null checks
+            const totalInvestment = portfolio.totalInvestment || 0;
+            const currentValue = portfolio.currentValue || 0;
+            document.getElementById('totalInvestment').textContent = totalInvestment.toLocaleString('en-IN', {minimumFractionDigits: 2});
+            document.getElementById('currentValue').textContent = currentValue.toLocaleString('en-IN', {minimumFractionDigits: 2});
+
+            // Create sector breakdown
             sectorData.forEach((sector, index) => {
-                const sectorId = `sector-${index}`;
-                const sectorCard = document.createElement('div');
-                sectorCard.className = 'card mb-2';
+                if (!sector) return;
                 
-                // Sort stocks within sector by allocation
-                sector.stocks.sort((a, b) => {
-                    const aValue = a.investedValue;
-                    const bValue = b.investedValue;
-                    return bValue - aValue;
+                const sectorId = `sector-${index}`;
+                const stocks = sector.stocks || [];
+                stocks.sort((a, b) => (b.investedValue || 0) - (a.investedValue || 0));
+                
+                const sectorTotal = sector.investedAmount || 0;
+                stocks.forEach(stock => {
+                    if (!stock) return;
+                    stock.sectorAllocationPercentage = sectorTotal > 0 ? ((stock.investedValue || 0) / sectorTotal * 100) : 0;
                 });
-
-                // Calculate stock allocations within sector
-                const sectorTotal = sector.investedAmount;
-                sector.stocks.forEach(stock => {
-                    stock.sectorAllocationPercentage = (stock.investedValue / sectorTotal) * 100;
-                });
-
-                sectorCard.innerHTML = `
+                
+                const sectorDiv = document.createElement('div');
+                sectorDiv.className = 'mb-2';
+                sectorDiv.innerHTML = `
                     <div class="sector-header" data-bs-toggle="collapse" data-bs-target="#${sectorId}">
-                        <div class="row align-items-center">
+                        <div class="row">
                             <div class="col-md-3">
-                                <h6 class="mb-0">${sector.sector}</h6>
+                                <h6 class="mb-0">${sector.sector || 'Unknown Sector'}</h6>
                             </div>
                             <div class="col-md-7">
                                 <div class="progress-container">
                                     <div class="progress-wrapper">
                                         <div class="progress">
                                             <div class="progress-bar" role="progressbar" 
-                                                 style="width: ${Math.max(2, sector.allocationPercentage)}%"
-                                                 aria-valuenow="${sector.allocationPercentage}" 
+                                                 style="width: ${Math.max(2, sector.allocationPercentage || 0)}%"
+                                                 aria-valuenow="${sector.allocationPercentage || 0}" 
                                                  aria-valuemin="0" 
                                                  aria-valuemax="100">
                                             </div>
                                         </div>
                                     </div>
-                                    <span class="small-percentage">${sector.allocationPercentage.toFixed(2)}%</span>
+                                    <span class="small-percentage">${(sector.allocationPercentage || 0).toFixed(2)}%</span>
                                 </div>
                             </div>
                             <div class="col-md-2 text-end">
-                                <span class="badge bg-primary">${sector.numberOfStocks} stocks</span>
+                                <span class="badge bg-primary">${sector.numberOfStocks || 0} stocks</span>
                             </div>
                         </div>
-                        <div class="row mt-2">
-                            <div class="col-md-6">
-                                <small>Invested: ₹${sector.investedAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</small>
-                            </div>
-                            <div class="col-md-6 text-end">
-                                <small>Current: ₹${sector.currentValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</small>
-                            </div>
+                        <div class="sector-stats">
+                            <span>Invested: ₹${(sector.investedAmount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                            <span>Current: ₹${(sector.currentValue || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
                         </div>
                     </div>
                     <div id="${sectorId}" class="collapse" data-bs-parent="#sectorAccordion">
-                        <div class="card-body">
+                        <div class="sector-details">
                             <div class="table-responsive">
-                                <table class="table table-hover">
+                                <table class="table table-sm table-hover stock-table">
                                     <thead>
                                         <tr>
                                             <th>Stock</th>
-                                            <th>Invested Amount</th>
-                                            <th>Current Value</th>
-                                            <th>% of Sector</th>
-                                            <th>% of Portfolio</th>
+                                            <th>Invested</th>
+                                            <th>Current</th>
+                                            <th>Sector %</th>
+                                            <th>Portfolio %</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${sector.stocks.map(stock => `
-                                            <tr class="stock-row">
-                                                <td>${stock.symbol} - ${stock.companyName || ''}</td>
-                                                <td>₹${stock.investedValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                                                <td>₹${(stock.currentPrice * stock.quantity).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                                        ${(sector.stocks || []).map(stock => {
+                                            if (!stock) return '';
+                                            const currentStockValue = (stock.currentPrice || 0) * (stock.quantity || 0);
+                                            const portfolioPercentage = totalInvestment > 0 ? ((stock.investedValue || 0) / totalInvestment * 100) : 0;
+                                            
+                                            return `
+                                            <tr>
+                                                <td>${stock.symbol || ''} - ${stock.companyName || ''}</td>
+                                                <td>₹${(stock.investedValue || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                                                <td>₹${currentStockValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                                                 <td>
                                                     <div class="progress-container">
                                                         <div class="progress-wrapper">
                                                             <div class="progress">
                                                                 <div class="progress-bar bg-info" role="progressbar" 
-                                                                     style="width: ${Math.max(2, stock.sectorAllocationPercentage)}%"
-                                                                     aria-valuenow="${stock.sectorAllocationPercentage}" 
-                                                                     aria-valuemin="0" 
-                                                                     aria-valuemax="100">
+                                                                     style="width: ${Math.max(2, stock.sectorAllocationPercentage || 0)}%">
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <span class="small-percentage">${stock.sectorAllocationPercentage.toFixed(2)}%</span>
+                                                        <span class="small-percentage">${(stock.sectorAllocationPercentage || 0).toFixed(2)}%</span>
                                                     </div>
                                                 </td>
                                                 <td>
@@ -860,43 +1022,41 @@
                                                         <div class="progress-wrapper">
                                                             <div class="progress">
                                                                 <div class="progress-bar bg-success" role="progressbar" 
-                                                                     style="width: ${Math.max(2, (stock.investedValue / portfolio.totalInvestment * 100))}%"
-                                                                     aria-valuenow="${(stock.investedValue / portfolio.totalInvestment * 100)}" 
-                                                                     aria-valuemin="0" 
-                                                                     aria-valuemax="100">
+                                                                     style="width: ${Math.max(2, portfolioPercentage)}%">
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <span class="small-percentage">${(stock.investedValue / portfolio.totalInvestment * 100).toFixed(2)}%</span>
+                                                        <span class="small-percentage">${portfolioPercentage.toFixed(2)}%</span>
                                                     </div>
                                                 </td>
                                             </tr>
-                                        `).join('')}
+                                        `}).join('')}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
                 `;
-                
-                accordion.appendChild(sectorCard);
+                accordion.appendChild(sectorDiv);
             });
 
-            // Update sector allocation chart
-            const ctx = document.getElementById('sectorAllocationChart').getContext('2d');
+            // Update chart with all sectors
+            const ctx = document.getElementById('sectorAllocationChart');
+            if (!ctx) {
+                console.error('Sector allocation chart canvas not found');
+                return;
+            }
             
-            // Destroy existing chart if it exists
             if (sectorChart) {
                 sectorChart.destroy();
             }
             
-            // Create new chart
             sectorChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: sectorData.map(sector => `${sector.sector} (${sector.allocationPercentage.toFixed(2)}%)`),
+                    labels: sectorData.map(sector => sector?.sector || 'Unknown'),
                     datasets: [{
-                        data: sectorData.map(sector => sector.allocationPercentage),
+                        data: sectorData.map(sector => sector?.allocationPercentage || 0),
                         backgroundColor: [
                             '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
                             '#858796', '#5a5c69', '#2e59d9', '#17a673', '#2c9faf'
@@ -905,84 +1065,142 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
+                    maintainAspectRatio: true,
+                    cutout: '60%',
+                    layout: {
+                        padding: 0
+                    },
                     plugins: {
                         legend: {
-                            position: 'bottom',
+                            position: 'right',
+                            align: 'center',
                             labels: {
-                                padding: 20
+                                boxWidth: 12,
+                                padding: 10,
+                                font: {
+                                    size: 11
+                                },
+                                generateLabels: function(chart) {
+                                    const data = chart.data;
+                                    if (data.labels.length && data.datasets.length) {
+                                        return data.labels.map((label, i) => {
+                                            const value = data.datasets[0].data[i] || 0;
+                                            return {
+                                                text: `${label} (${value.toFixed(2)}%)`,
+                                                fillStyle: data.datasets[0].backgroundColor[i],
+                                                hidden: isNaN(value),
+                                                index: i
+                                            };
+                                        });
+                                    }
+                                    return [];
+                                }
                             }
                         },
-                        title: {
-                            display: true,
-                            text: 'Sector-wise Portfolio Allocation',
-                            padding: {
-                                top: 10,
-                                bottom: 30
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    return `${label}: ${value.toFixed(2)}%`;
+                                }
                             }
                         }
                     }
                 }
             });
         }
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize sorting state
-            let currentSort = {
-                column: null,
-                direction: 'asc'
+
+        function updatePerformanceTables(portfolio) {
+            if (!portfolio) return;
+
+            const formatPL = (pl) => {
+                const value = parseFloat(pl);
+                const formatted = Math.abs(value).toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+                const sign = value >= 0 ? '₹' : '-₹';
+                const className = value >= 0 ? 'pl-positive' : 'pl-negative';
+                return `<span class="pl-value ${className}">${sign}${formatted}</span>`;
             };
 
-            // Add click handlers to all sortable columns
-            document.querySelectorAll('.sortable').forEach(header => {
-                header.addEventListener('click', () => {
-                    const column = header.dataset.sort;
-                    
-                    // Remove sorting classes from all headers
-                    document.querySelectorAll('.sortable').forEach(h => {
-                        h.classList.remove('asc', 'desc');
-                    });
+            const formatReturn = (returnPct) => {
+                const value = parseFloat(returnPct);
+                const formatted = Math.abs(value).toFixed(2);
+                const className = value >= 0 ? 'return-positive' : 'return-negative';
+                return `<span class="${className}">${value >= 0 ? '+' : '-'}${formatted}%</span>`;
+            };
 
-                    // Toggle sort direction if clicking the same column
-                    if (currentSort.column === column) {
-                        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        currentSort.column = column;
-                        currentSort.direction = 'asc';
-                    }
+            const createRow = (stock) => `
+                <tr>
+                    <td><div class="stock-name" title="${stock.symbol}">${stock.symbol}</div></td>
+                    <td>${formatReturn(stock.returnPercentage)}</td>
+                    <td>${formatPL(stock.profitLoss)}</td>
+                </tr>
+            `;
 
-                    // Add appropriate class to clicked header
-                    header.classList.add(currentSort.direction);
+            // Update top performers
+            const topPerformers = portfolio.stocks
+                .filter(stock => stock.returnPercentage > 0)
+                .sort((a, b) => b.returnPercentage - a.returnPercentage)
+                .slice(0, 5);
+            const topPerformersTable = document.getElementById('topPerformersTable').getElementsByTagName('tbody')[0];
+            topPerformersTable.innerHTML = topPerformers.map(createRow).join('');
 
-                    // Get table rows and sort them
-                    const tbody = document.querySelector('#portfolioTable tbody');
-                    const rows = Array.from(tbody.querySelectorAll('tr'));
-
-                    const sortedRows = rows.sort((a, b) => {
-                        let aVal = a.querySelector(`td[data-${column}]`).dataset[column];
-                        let bVal = b.querySelector(`td[data-${column}]`).dataset[column];
-
-                        // Convert to numbers for numeric columns
-                        const numericColumns = ['quantity', 'avgPrice', 'currentPrice', 'investedValue', 'currentValue', 'profitLoss', 'returnPercentage'];
-                        if (numericColumns.includes(column)) {
-                            aVal = parseFloat(aVal) || 0;
-                            bVal = parseFloat(bVal) || 0;
-                        }
-
-                        if (aVal < bVal) return currentSort.direction === 'asc' ? -1 : 1;
-                        if (aVal > bVal) return currentSort.direction === 'asc' ? 1 : -1;
-                        return 0;
-                    });
-
-                    // Clear and re-append sorted rows
-                    while (tbody.firstChild) {
-                        tbody.removeChild(tbody.firstChild);
-                    }
-                    sortedRows.forEach(row => tbody.appendChild(row));
+            // Update top losers
+            const topLosers = portfolio.stocks
+                .filter(stock => stock.returnPercentage < 0)
+                .sort((a, b) => a.returnPercentage - b.returnPercentage)
+                .slice(0, 5);
+            const topLosersTable = document.getElementById('topLosersTable').getElementsByTagName('tbody')[0];
+            topLosersTable.innerHTML = topLosers.map(createRow).join('');
+        }
+    </script>
+    <script>
+        function updatePerformanceTables(portfolio) {
+            const formatPL = (pl) => {
+                const value = parseFloat(pl);
+                const formatted = Math.abs(value).toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
                 });
-            });
-        });
+                const sign = value >= 0 ? '₹' : '-₹';
+                const className = value >= 0 ? 'pl-positive' : 'pl-negative';
+                return `<span class="pl-value ${className}">${sign}${formatted}</span>`;
+            };
+
+            const formatReturn = (returnPct) => {
+                const value = parseFloat(returnPct);
+                const formatted = Math.abs(value).toFixed(2);
+                const className = value >= 0 ? 'return-positive' : 'return-negative';
+                return `<span class="${className}">${value >= 0 ? '+' : '-'}${formatted}%</span>`;
+            };
+
+            const createRow = (stock) => `
+                <tr>
+                    <td><div class="stock-name" title="${stock.symbol}">${stock.symbol}</div></td>
+                    <td>${formatReturn(stock.returnPercentage)}</td>
+                    <td>${formatPL(stock.profitLoss)}</td>
+                </tr>
+            `;
+
+            // Update top performers
+            const topPerformers = portfolio.stocks
+                .filter(stock => stock.returnPercentage > 0)
+                .sort((a, b) => b.returnPercentage - a.returnPercentage)
+                .slice(0, 5);
+            const topPerformersTable = document.getElementById('topPerformersTable').getElementsByTagName('tbody')[0];
+            topPerformersTable.innerHTML = topPerformers.map(createRow).join('');
+
+            // Update top losers
+            const topLosers = portfolio.stocks
+                .filter(stock => stock.returnPercentage < 0)
+                .sort((a, b) => a.returnPercentage - b.returnPercentage)
+                .slice(0, 5);
+            const topLosersTable = document.getElementById('topLosersTable').getElementsByTagName('tbody')[0];
+            topLosersTable.innerHTML = topLosers.map(createRow).join('');
+        }
     </script>
 </body>
 </html>
