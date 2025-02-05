@@ -28,6 +28,20 @@ public class NseStockDetails {
     private double openPrice;
     private double percentChange;
     private double returnChange;
+    
+    // Time-based changes
+    private double oneDayProfitLoss;
+    private double oneDayReturnPercentage;
+    private double oneDayPreviousPrice;
+    
+    private double oneMonthProfitLoss;
+    private double oneMonthReturnPercentage;
+    private double oneMonthPreviousPrice;
+    
+    private double oneYearProfitLoss;
+    private double oneYearReturnPercentage;
+    private double oneYearPreviousPrice;
+    
     private UUID id;
     private String brokerPlatform;
     private String isin;

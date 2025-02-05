@@ -155,11 +155,12 @@ public interface NseStockRepository extends JpaRepository<NseStockEntity, UUID> 
            "CASE WHEN SUM(n.quantity) > 0 THEN SUM(n.investedValue) / SUM(n.quantity) ELSE 0 END, " +
            "e.industry, " +
            "e.name, " +
-           "COALESCE(s.lastPrice, 0), " +  
-           "COALESCE(s.lastPrice * SUM(n.quantity), 0)) " +  
+           "COALESCE(s.closePrice, CASE WHEN SUM(n.quantity) > 0 THEN SUM(n.investedValue) / SUM(n.quantity) ELSE 0 END), " +  
+           "COALESCE(s.closePrice * SUM(n.quantity), SUM(n.investedValue))) " +  
            "FROM NseStockEntity n " +
            "LEFT JOIN EquityDataEntity e ON n.symbol = e.symbol " +
-           "LEFT JOIN StockEntity s ON n.symbol = s.symbol " +  
+           "LEFT JOIN StockEntity s ON n.symbol = s.symbol " +
+           "AND s.createdAt = (SELECT MAX(s2.createdAt) FROM StockEntity s2 WHERE s2.symbol = n.symbol) " +
            "WHERE n.userId = :userId " +
            "AND n.createdDate IN (" +
            "    SELECT MAX(n2.createdDate) " +
@@ -169,7 +170,7 @@ public interface NseStockRepository extends JpaRepository<NseStockEntity, UUID> 
            "    AND n2.symbol = n.symbol " +
            "    GROUP BY n2.brokerPlatform, n2.symbol" +
            ") " +
-           "GROUP BY n.symbol, n.isin, e.industry, e.name, s.lastPrice")
+           "GROUP BY n.symbol, n.isin, e.industry, e.name, s.closePrice")
     List<NseStockDetails> getAggregatedStocksByUserId(@Param("userId") String userId);
 
     //     public NseStockDetails(String symbol, String isin, double quantity, double investedValue, 

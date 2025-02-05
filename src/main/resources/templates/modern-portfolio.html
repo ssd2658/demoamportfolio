@@ -6,6 +6,7 @@
     <title>Modern Portfolio Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --primary-color: #4e73df;
@@ -73,21 +74,17 @@
 
         .sortable {
             cursor: pointer;
-            user-select: none;
-        }
-        .sortable:hover {
-            background-color: #f1f3f9;
         }
         .sortable i {
             margin-left: 5px;
-            opacity: 0.3;
+            color: #ccc;
         }
         .sortable.asc i {
-            opacity: 1;
+            color: #000;
             transform: rotate(180deg);
         }
         .sortable.desc i {
-            opacity: 1;
+            color: #000;
         }
     </style>
 </head>
@@ -196,53 +193,159 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2 summary-card">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">1 Day Change</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="oneDayChange"></div>
+                            </div>
+                            <div class="col-auto">
+                                <i class='bx bx-rupee fs-2'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2 summary-card">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">1 Month Change</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="oneMonthChange"></div>
+                            </div>
+                            <div class="col-auto">
+                                <i class='bx bx-rupee fs-2'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2 summary-card">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">1 Year Change</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="oneYearChange"></div>
+                            </div>
+                            <div class="col-auto">
+                                <i class='bx bx-rupee fs-2'></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Portfolio Table -->
-        <div class="card shadow mb-4">
-            <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                <h6 class="m-0 font-weight-bold text-primary">Portfolio Holdings</h6>
-                <div class="d-flex align-items-center">
-                    <input type="text" class="form-control form-control-sm mr-2" id="searchInput" placeholder="Search...">
-                    <select class="form-select form-select-sm ms-2" id="sortSelect">
-                        <option value="symbol">Symbol</option>
-                        <option value="isin">ISIN</option>
-                        <option value="industry">Industry</option>
-                        <option value="quantity">Quantity</option>
-                        <option value="avePrice">Average Price</option>
-                        <option value="currentPrice">Current Price</option>
-                        <option value="investedValue">Invested Value</option>
-                        <option value="currentValue">Current Value</option>
-                        <option value="profitLoss">Profit/Loss</option>
-                        <option value="returnChange">Return %</option>
-                    </select>
+        <!-- Top Performers and Losers Row -->
+        <div class="row">
+            <!-- Top Performers -->
+            <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-success">Top Performers</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="topPerformersTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Symbol</th>
+                                        <th>Company Name</th>
+                                        <th>Quantity</th>
+                                        <th>Avg Price</th>
+                                        <th>Current Price</th>
+                                        <th>Profit/Loss</th>
+                                        <th>Return %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover" id="portfolioTable">
-                        <thead>
-                            <tr>
-                                <th style="width: 50px;">Sr No</th>
-                                <th class="sortable" data-sort="symbol">Symbol <i class='bx bx-sort'></i></th>
-                                <th class="sortable" data-sort="isin">ISIN <i class='bx bx-sort'></i></th>
-                                <th class="sortable" data-sort="companyName">Company Name <i class='bx bx-sort'></i></th>
-                                <th class="sortable" data-sort="industry">Industry <i class='bx bx-sort'></i></th>
-                                <th class="sortable" data-sort="quantity">Quantity <i class='bx bx-sort'></i></th>
-                                <th class="sortable" data-sort="avePrice">Avg Price <i class='bx bx-sort'></i></th>
-                                <th class="sortable" data-sort="currentPrice">Current Price <i class='bx bx-sort'></i></th>
-                                <th class="sortable" data-sort="investedValue">Invested Value <i class='bx bx-sort'></i></th>
-                                <th class="sortable" data-sort="currentValue">Current Value <i class='bx bx-sort'></i></th>
-                                <th class="sortable" data-sort="profitLoss">Profit/Loss <i class='bx bx-sort'></i></th>
-                                <th class="sortable" data-sort="returnChange">Return % <i class='bx bx-sort'></i></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+
+            <!-- Top Losers -->
+            <div class="col-xl-6 col-lg-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-danger">Top Losers</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="topLosersTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Symbol</th>
+                                        <th>Company Name</th>
+                                        <th>Quantity</th>
+                                        <th>Avg Price</th>
+                                        <th>Current Price</th>
+                                        <th>Profit/Loss</th>
+                                        <th>Return %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
+                <!-- Portfolio Table -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-primary">Portfolio Details</h6>
+                        <div class="d-flex align-items-center">
+                            <input type="text" id="searchInput" class="form-control form-control-sm mr-2" placeholder="Search...">
+                            <select id="sortSelect" class="form-control form-control-sm">
+                                <option value="symbol">Symbol</option>
+                                <option value="companyName">Company Name</option>
+                                <option value="industry">Industry</option>
+                                <option value="quantity">Quantity</option>
+                                <option value="currentPrice">Current Price</option>
+                                <option value="investedValue">Invested Value</option>
+                                <option value="returnChange">Return %</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="portfolioTable">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" data-sort="index"># <i class="fas fa-sort"></i></th>
+                                        <th class="sortable" data-sort="symbol">Symbol <i class="fas fa-sort"></i></th>
+                                        <th class="sortable" data-sort="isin">ISIN <i class="fas fa-sort"></i></th>
+                                        <th class="sortable" data-sort="companyName">Company Name <i class="fas fa-sort"></i></th>
+                                        <th class="sortable" data-sort="industry">Industry <i class="fas fa-sort"></i></th>
+                                        <th class="sortable" data-sort="quantity">Quantity <i class="fas fa-sort"></i></th>
+                                        <th class="sortable" data-sort="avgPrice">Avg Price <i class="fas fa-sort"></i></th>
+                                        <th class="sortable" data-sort="currentPrice">Current Price <i class="fas fa-sort"></i></th>
+                                        <th class="sortable" data-sort="investedValue">Invested Value <i class="fas fa-sort"></i></th>
+                                        <th class="sortable" data-sort="currentValue">Current Value <i class="fas fa-sort"></i></th>
+                                        <th class="sortable" data-sort="profitLoss">Profit/Loss <i class="fas fa-sort"></i></th>
+                                        <th class="sortable" data-sort="returnPercentage">Return % <i class="fas fa-sort"></i></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -285,7 +388,7 @@
                         let bVal = b.children[getColumnIndex(column)].textContent.trim();
                         
                         // Convert to numbers if dealing with numeric columns
-                        if (['quantity', 'avePrice', 'currentPrice', 'investedValue', 'currentValue', 'profitLoss'].includes(column)) {
+                        if (['quantity', 'avgPrice', 'currentPrice', 'investedValue', 'currentValue', 'profitLoss'].includes(column)) {
                             aVal = parseFloat(aVal.replace(/[₹,]/g, ''));
                             bVal = parseFloat(bVal.replace(/[₹,]/g, ''));
                         }
@@ -313,7 +416,7 @@
                 'companyName': 3,
                 'industry': 4,
                 'quantity': 5,
-                'avePrice': 6,
+                'avgPrice': 6,
                 'currentPrice': 7,
                 'investedValue': 8,
                 'currentValue': 9,
@@ -325,92 +428,228 @@
 
         async function loadPortfolioData() {
             try {
-                const username = 'MKU257';
-                const response = await fetch(`/api/portfolio/api/v1/portfolio/stocks?username=${username}`);
-                const data = await response.json();
+                document.querySelector('.loading').style.display = 'block';
                 
-                updateSummaryCards(data);
-                populatePortfolioTable(data);
-                setupSearchAndSort(data);
+                const response = await fetch('/api/v1/portfolio/portfolio?username=MKU257');
+                console.log('API Response:', response);
                 
-                document.querySelector('.loading').style.display = 'none';
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const portfolio = await response.json();
+                console.log('Portfolio Data:', portfolio);
+
+                if (!portfolio || !portfolio.stocks) {
+                    throw new Error('Invalid portfolio data received');
+                }
+
+                // Update summary cards
+                updateSummaryCards(portfolio);
+                
+                // Update tables
+                populatePortfolioTable(portfolio.stocks);
+                
+                // Update top performers and losers
+                if (portfolio.topPerformers && portfolio.topPerformers.length > 0) {
+                    populateTopPerformersTable(portfolio.topPerformers);
+                }
+                if (portfolio.topLosers && portfolio.topLosers.length > 0) {
+                    populateTopLosersTable(portfolio.topLosers);
+                }
+
             } catch (error) {
                 console.error('Error loading portfolio data:', error);
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'alert alert-danger alert-dismissible fade show';
+                errorMessage.innerHTML = `
+                    <strong>Error!</strong> ${error.message || 'Failed to load portfolio data'}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                document.querySelector('.container-fluid').insertBefore(errorMessage, document.querySelector('.container-fluid').firstChild);
+            } finally {
                 document.querySelector('.loading').style.display = 'none';
             }
         }
 
-        function updateSummaryCards(data) {
-            // Calculate totals only for stocks with valid current prices
-            const validStocks = data.filter(stock => stock.currentPrice !== 0);
-            
-            const totalInvestment = validStocks.reduce((sum, stock) => sum + stock.investedValue, 0);
-            const totalCurrentValue = validStocks.reduce((sum, stock) => sum + (stock.quantity * stock.currentPrice), 0);
-            const totalProfitLoss = totalCurrentValue - totalInvestment;
-            const totalReturn = totalInvestment > 0 ? (totalProfitLoss / totalInvestment) * 100 : 0;
+        function updateSummaryCards(portfolio) {
+            try {
+                if (!portfolio) return;
 
-            document.getElementById('totalInvestment').textContent = 
-                '₹' + totalInvestment.toLocaleString('en-IN', {minimumFractionDigits: 2});
-            document.getElementById('totalStocks').textContent = data.length;
-            document.getElementById('totalIndustries').textContent = 
-                new Set(data.map(stock => stock.industry).filter(Boolean)).size;
-            document.getElementById('totalCurrentValue').textContent = 
-                '₹' + totalCurrentValue.toLocaleString('en-IN', {minimumFractionDigits: 2});
-            
-            // Only show colors for profit/loss and return if we have valid current prices
-            const hasValidPrices = validStocks.length > 0;
-            const profitLossElement = document.getElementById('totalProfitLoss');
-            profitLossElement.textContent = '₹' + totalProfitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2});
-            profitLossElement.className = hasValidPrices ? (totalProfitLoss >= 0 ? 'text-success' : 'text-danger') : '';
-            
-            const returnElement = document.getElementById('totalReturn');
-            returnElement.textContent = totalReturn.toFixed(2) + '%';
-            returnElement.className = hasValidPrices ? (totalReturn >= 0 ? 'text-success' : 'text-danger') : '';
+                // Set default values if properties are missing
+                portfolio.totalInvestment = portfolio.totalInvestment || 0;
+                portfolio.totalStocks = portfolio.totalStocks || (portfolio.stocks ? portfolio.stocks.length : 0);
+                portfolio.totalIndustries = portfolio.totalIndustries || 0;
+                portfolio.totalCurrentValue = portfolio.totalCurrentValue || 0;
+                portfolio.totalProfitLoss = portfolio.totalProfitLoss || 0;
+                portfolio.totalReturnPercentage = portfolio.totalReturnPercentage || 0;
+                
+                // Time-based changes
+                portfolio.oneDayProfitLoss = portfolio.oneDayProfitLoss || 0;
+                portfolio.oneDayReturnPercentage = portfolio.oneDayReturnPercentage || 0;
+                portfolio.oneMonthProfitLoss = portfolio.oneMonthProfitLoss || 0;
+                portfolio.oneMonthReturnPercentage = portfolio.oneMonthReturnPercentage || 0;
+                portfolio.oneYearProfitLoss = portfolio.oneYearProfitLoss || 0;
+                portfolio.oneYearReturnPercentage = portfolio.oneYearReturnPercentage || 0;
+
+                document.getElementById('totalInvestment').textContent = 
+                    '₹' + portfolio.totalInvestment.toLocaleString('en-IN', {minimumFractionDigits: 2});
+                document.getElementById('totalStocks').textContent = portfolio.totalStocks;
+                document.getElementById('totalIndustries').textContent = portfolio.totalIndustries;
+                document.getElementById('totalCurrentValue').textContent = 
+                    '₹' + portfolio.totalCurrentValue.toLocaleString('en-IN', {minimumFractionDigits: 2});
+                
+                const profitLossElement = document.getElementById('totalProfitLoss');
+                profitLossElement.textContent = '₹' + portfolio.totalProfitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2});
+                profitLossElement.className = portfolio.totalProfitLoss >= 0 ? 'text-success' : 'text-danger';
+                
+                const returnElement = document.getElementById('totalReturn');
+                returnElement.textContent = portfolio.totalReturnPercentage.toFixed(2) + '%';
+                returnElement.className = portfolio.totalReturnPercentage >= 0 ? 'text-success' : 'text-danger';
+
+                // Update time-based changes
+                updateTimeBasedCards(portfolio);
+            } catch (error) {
+                console.error('Error updating summary cards:', error);
+                throw error;
+            }
         }
 
-        function populatePortfolioTable(data) {
+        function updateTimeBasedCards(portfolio) {
+            // Update 1 Day Change
+            const oneDayElement = document.getElementById('oneDayChange');
+            const oneDayProfitLoss = portfolio.oneDayProfitLoss || 0;
+            const oneDayReturnPercentage = portfolio.oneDayReturnPercentage || 0;
+            oneDayElement.innerHTML = `
+                <div class="${oneDayReturnPercentage >= 0 ? 'text-success' : 'text-danger'}">
+                    ₹${oneDayProfitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2})}
+                    (${oneDayReturnPercentage.toFixed(2)}%)
+                </div>`;
+
+            // Update 1 Month Change
+            const oneMonthElement = document.getElementById('oneMonthChange');
+            const oneMonthProfitLoss = portfolio.oneMonthProfitLoss || 0;
+            const oneMonthReturnPercentage = portfolio.oneMonthReturnPercentage || 0;
+            oneMonthElement.innerHTML = `
+                <div class="${oneMonthReturnPercentage >= 0 ? 'text-success' : 'text-danger'}">
+                    ₹${oneMonthProfitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2})}
+                    (${oneMonthReturnPercentage.toFixed(2)}%)
+                </div>`;
+
+            // Update 1 Year Change
+            const oneYearElement = document.getElementById('oneYearChange');
+            const oneYearProfitLoss = portfolio.oneYearProfitLoss || 0;
+            const oneYearReturnPercentage = portfolio.oneYearReturnPercentage || 0;
+            oneYearElement.innerHTML = `
+                <div class="${oneYearReturnPercentage >= 0 ? 'text-success' : 'text-danger'}">
+                    ₹${oneYearProfitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2})}
+                    (${oneYearReturnPercentage.toFixed(2)}%)
+                </div>`;
+        }
+
+        function populatePortfolioTable(stocks) {
             const tbody = document.querySelector('#portfolioTable tbody');
             tbody.innerHTML = '';
 
-            data.forEach((stock, index) => {
+            stocks.forEach((stock, index) => {
                 const row = document.createElement('tr');
                 
-                // Calculate current value and profit/loss only if current price is not 0
-                const currentValue = stock.currentPrice === 0 ? 0 : (stock.quantity * stock.currentPrice);
-                const profitLoss = stock.currentPrice === 0 ? 0 : (currentValue - stock.investedValue);
-                const returnPercentage = stock.currentPrice === 0 ? 0 : 
-                    (stock.investedValue > 0 ? (profitLoss / stock.investedValue) * 100 : 0);
+                // Calculate display values and handle nulls
+                const quantity = stock.quantity || 0;
+                const currentPrice = stock.currentPrice || 0;
+                const avgPrice = stock.avgPrice || 0;
+                const investedValue = stock.investedValue || 0;
+                const currentValue = currentPrice === 0 ? 0 : (quantity * currentPrice);
+                const profitLoss = currentPrice === 0 ? 0 : (currentValue - investedValue);
+                const returnPercentage = currentPrice === 0 ? 0 : 
+                    (investedValue > 0 ? (profitLoss / investedValue) * 100 : 0);
                 
-                // Only add color classes if current price is not 0
-                const profitLossClass = stock.currentPrice === 0 ? '' : (profitLoss >= 0 ? 'text-success' : 'text-danger');
-                const returnChangeClass = stock.currentPrice === 0 ? '' : (returnPercentage >= 0 ? 'text-success' : 'text-danger');
+                // Color classes
+                const profitLossClass = currentPrice === 0 ? '' : (profitLoss >= 0 ? 'text-success' : 'text-danger');
+                const returnChangeClass = currentPrice === 0 ? '' : (returnPercentage >= 0 ? 'text-success' : 'text-danger');
                 
                 row.innerHTML = `
-                    <td class="text-center">${index + 1}</td>
-                    <td>${stock.symbol}</td>
-                    <td>${stock.isin || '-'}</td>
-                    <td>${stock.companyName || '-'}</td>
-                    <td>${stock.industry || '-'}</td>
-                    <td>${Math.round(stock.quantity)}</td>
-                    <td>₹${stock.avePrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                    <td>₹${stock.currentPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                    <td>₹${stock.investedValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                    <td>₹${currentValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                    <td class="${profitLossClass}">₹${profitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                    <td class="${returnChangeClass}">${returnPercentage.toFixed(2)}%</td>
+                    <td data-index="${index + 1}">${index + 1}</td>
+                    <td data-symbol="${stock.symbol || ''}">${stock.symbol || ''}</td>
+                    <td data-isin="${stock.isin || ''}">${stock.isin || ''}</td>
+                    <td data-companyName="${stock.companyName || ''}">${stock.companyName || ''}</td>
+                    <td data-industry="${stock.industry || ''}">${stock.industry || ''}</td>
+                    <td data-quantity="${quantity}">${quantity}</td>
+                    <td data-avgPrice="${avgPrice}">₹${avgPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td data-currentPrice="${currentPrice}">₹${currentPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td data-investedValue="${investedValue}">₹${investedValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td data-currentValue="${currentValue}">₹${currentValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td data-profitLoss="${profitLoss}" class="${profitLossClass}">₹${profitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td data-returnChange="${returnPercentage}" class="${returnChangeClass}">${returnPercentage.toFixed(2)}%</td>
                 `;
                 tbody.appendChild(row);
             });
-
-            updateSummaryCards(data);
         }
 
-        function setupSearchAndSort(originalData) {
+        function populateTopPerformersTable(stocks) {
+            const tbody = document.querySelector('#topPerformersTable tbody');
+            tbody.innerHTML = '';
+
+            stocks.forEach((stock, index) => {
+                const quantity = stock.quantity || 0;
+                const currentPrice = stock.currentPrice || 0;
+                const avgPrice = stock.avgPrice || 0;
+                const investedValue = stock.investedValue || 0;
+                const currentValue = currentPrice === 0 ? 0 : (quantity * currentPrice);
+                const profitLoss = currentPrice === 0 ? 0 : (currentValue - investedValue);
+                const returnPercentage = currentPrice === 0 ? 0 : 
+                    (investedValue > 0 ? (profitLoss / investedValue) * 100 : 0);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${stock.symbol || ''}</td>
+                    <td>${stock.companyName || ''}</td>
+                    <td>${quantity}</td>
+                    <td>₹${avgPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td>₹${currentPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td class="text-success">₹${profitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td class="text-success">${returnPercentage.toFixed(2)}%</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function populateTopLosersTable(stocks) {
+            const tbody = document.querySelector('#topLosersTable tbody');
+            tbody.innerHTML = '';
+
+            stocks.forEach((stock, index) => {
+                const quantity = stock.quantity || 0;
+                const currentPrice = stock.currentPrice || 0;
+                const avgPrice = stock.avgPrice || 0;
+                const investedValue = stock.investedValue || 0;
+                const currentValue = currentPrice === 0 ? 0 : (quantity * currentPrice);
+                const profitLoss = currentPrice === 0 ? 0 : (currentValue - investedValue);
+                const returnPercentage = currentPrice === 0 ? 0 : 
+                    (investedValue > 0 ? (profitLoss / investedValue) * 100 : 0);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${stock.symbol || ''}</td>
+                    <td>${stock.companyName || ''}</td>
+                    <td>${quantity}</td>
+                    <td>₹${avgPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td>₹${currentPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td class="text-danger">₹${profitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                    <td class="text-danger">${returnPercentage.toFixed(2)}%</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function setupSearchAndSort(portfolio) {
             const searchInput = document.getElementById('searchInput');
             const sortSelect = document.getElementById('sortSelect');
 
             function filterAndSortData() {
-                let filteredData = [...originalData];
+                let filteredData = [...portfolio.stocks];
 
                 // Filter
                 const searchTerm = searchInput.value.toLowerCase();
@@ -433,8 +672,8 @@
                     
                     // Handle return percentage sorting separately
                     if (sortBy === 'returnChange') {
-                        const aReturn = a.currentPrice === 0 ? 0 : a.returnChange;
-                        const bReturn = b.currentPrice === 0 ? 0 : b.returnChange;
+                        const aReturn = a.currentPrice === 0 ? 0 : ((a.currentPrice * a.quantity - a.investedValue) / a.investedValue * 100);
+                        const bReturn = b.currentPrice === 0 ? 0 : ((b.currentPrice * b.quantity - b.investedValue) / b.investedValue * 100);
                         return bReturn - aReturn;
                     }
                     
@@ -448,6 +687,64 @@
             searchInput.addEventListener('input', filterAndSortData);
             sortSelect.addEventListener('change', filterAndSortData);
         }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize sorting state
+            let currentSort = {
+                column: null,
+                direction: 'asc'
+            };
+
+            // Add click handlers to all sortable columns
+            document.querySelectorAll('.sortable').forEach(header => {
+                header.addEventListener('click', () => {
+                    const column = header.dataset.sort;
+                    
+                    // Remove sorting classes from all headers
+                    document.querySelectorAll('.sortable').forEach(h => {
+                        h.classList.remove('asc', 'desc');
+                    });
+
+                    // Toggle sort direction if clicking the same column
+                    if (currentSort.column === column) {
+                        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        currentSort.column = column;
+                        currentSort.direction = 'asc';
+                    }
+
+                    // Add appropriate class to clicked header
+                    header.classList.add(currentSort.direction);
+
+                    // Get table rows and sort them
+                    const tbody = document.querySelector('#portfolioTable tbody');
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+                    const sortedRows = rows.sort((a, b) => {
+                        let aVal = a.querySelector(`td[data-${column}]`).dataset[column];
+                        let bVal = b.querySelector(`td[data-${column}]`).dataset[column];
+
+                        // Convert to numbers for numeric columns
+                        const numericColumns = ['quantity', 'avgPrice', 'currentPrice', 'investedValue', 'currentValue', 'profitLoss', 'returnPercentage'];
+                        if (numericColumns.includes(column)) {
+                            aVal = parseFloat(aVal) || 0;
+                            bVal = parseFloat(bVal) || 0;
+                        }
+
+                        if (aVal < bVal) return currentSort.direction === 'asc' ? -1 : 1;
+                        if (aVal > bVal) return currentSort.direction === 'asc' ? 1 : -1;
+                        return 0;
+                    });
+
+                    // Clear and re-append sorted rows
+                    while (tbody.firstChild) {
+                        tbody.removeChild(tbody.firstChild);
+                    }
+                    sortedRows.forEach(row => tbody.appendChild(row));
+                });
+            });
+        });
     </script>
 </body>
 </html>

@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 
 import org.am.mypotrfolio.domain.NseStock;
 import org.am.mypotrfolio.domain.NseStockDetails;
+import org.am.mypotrfolio.domain.Portfolio;
 import org.am.mypotrfolio.domain.SectorInvestmentDTO;
 import org.am.mypotrfolio.entity.NseStockEntity;
 // import org.am.mypotrfolio.exceptions.ApiSubError;
@@ -55,7 +56,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@RequestMapping("/api/portfolio")
+@RequestMapping("/api/v1/portfolio")
 @Tag(name = "Portfolio Management", description = "APIs for managing investment portfolios across different platforms")
 @Slf4j
 @RequiredArgsConstructor
@@ -212,7 +213,7 @@ public class PortfolioController {
     //     companyMasterData.processCompanyRecords("Company") ;
     // }
 
-    @GetMapping("/portfolio")
+    @GetMapping("/portfolio1")
     @Operation(
         summary = "Retrieve Portfolio",
         description = "Retrieve portfolio with optional filtering",
@@ -252,21 +253,21 @@ public class PortfolioController {
         }
     }
 
-    @GetMapping("/api/v1/portfolio/stocks")
+    @GetMapping("/portfolio")
     @Operation(summary = "Get all NSE stock details for a user")
     @ApiResponse(
         responseCode = "200",
         description = "Successfully retrieved stock details",
         content = @Content(
             mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = NseStockDetails.class))
+            schema = @Schema(implementation = Portfolio.class)
         )
     )
-    public ResponseEntity<List<NseStockDetails>> getUserStocks(
+    public ResponseEntity<Portfolio> getUserStocks(
             @Parameter(description = "Username to fetch stocks for") 
             @RequestParam("username") String username) {
-        List<NseStockDetails> stockDetails = testService.getAllStocksByUserId(username);
-        return ResponseEntity.ok(stockDetails);
+        Portfolio portfolio = testService.getAllStocksByUserId(username);
+        return ResponseEntity.ok(portfolio);
     }
 
     @PostMapping("/download")

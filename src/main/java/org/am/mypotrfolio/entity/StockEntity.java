@@ -16,6 +16,8 @@ public class StockEntity {
 
     @Column(nullable = false)
     private String symbol;
+
+    private String isin;
     
     @Column(name = "exchange", nullable = false)
     private String exchange;
@@ -77,7 +79,7 @@ public class StockEntity {
     private ZonedDateTime lastTradeTime;
     
     // Audit fields
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt;
     
     @Column(name = "updated_at")
