@@ -293,6 +293,30 @@
             font-size: 0.75rem;
             padding: 0.25rem 0.5rem;
         }
+        
+        .stock-details {
+            min-width: 200px;
+        }
+        
+        .stock-symbol {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1.1em;
+        }
+        
+        .stock-isin {
+            font-size: 0.8em;
+            color: var(--secondary-color);
+        }
+        
+        .stock-name {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+        }
     </style>
 </head>
 <body>
@@ -540,13 +564,13 @@
                 <div class="d-flex align-items-center">
                     <input type="text" id="searchInput" class="form-control form-control-sm mr-2" placeholder="Search...">
                     <select id="sortSelect" class="form-control form-control-sm">
-                        <option value="symbol">Symbol</option>
-                        <option value="companyName">Company Name</option>
+                        <option value="stock">Stock</option>
                         <option value="industry">Industry</option>
+                        <option value="brokerPlatforms">Broker Platforms</option>
                         <option value="quantity">Quantity</option>
                         <option value="currentPrice">Current Price</option>
                         <option value="investedValue">Invested Value</option>
-                        <option value="returnChange">Return %</option>
+                        <option value="returnPercentage">Return %</option>
                     </select>
                 </div>
             </div>
@@ -556,10 +580,9 @@
                         <thead>
                             <tr>
                                 <th class="sortable" data-sort="index"># <i class="fas fa-sort"></i></th>
-                                <th class="sortable" data-sort="symbol">Symbol <i class="fas fa-sort"></i></th>
-                                <th class="sortable" data-sort="isin">ISIN <i class="fas fa-sort"></i></th>
-                                <th class="sortable" data-sort="companyName">Company Name <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="stock">Stock <i class="fas fa-sort"></i></th>
                                 <th class="sortable" data-sort="industry">Industry <i class="fas fa-sort"></i></th>
+                                <th class="sortable" data-sort="brokerPlatforms">Broker Platforms <i class="fas fa-sort"></i></th>
                                 <th class="sortable" data-sort="quantity">Quantity <i class="fas fa-sort"></i></th>
                                 <th class="sortable" data-sort="avgPrice">Avg Price <i class="fas fa-sort"></i></th>
                                 <th class="sortable" data-sort="currentPrice">Current Price <i class="fas fa-sort"></i></th>
@@ -581,7 +604,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         let currentSort = {
-            column: 'symbol',
+            column: 'stock',
             direction: 'asc'
         };
         let portfolioData = [];
@@ -643,17 +666,17 @@
 
         function getColumnIndex(column) {
             const columns = {
-                'symbol': 1,
-                'isin': 2,
-                'companyName': 3,
-                'industry': 4,
-                'quantity': 5,
-                'avgPrice': 6,
-                'currentPrice': 7,
-                'investedValue': 8,
-                'currentValue': 9,
-                'profitLoss': 10,
-                'returnChange': 11
+                'index': 0,
+                'stock': 1,
+                'industry': 2,
+                'brokerPlatforms': 3,
+                'quantity': 4,
+                'avgPrice': 5,
+                'currentPrice': 6,
+                'investedValue': 7,
+                'currentValue': 8,
+                'profitLoss': 9,
+                'returnPercentage': 10
             };
             return columns[column];
         }
@@ -804,17 +827,20 @@
                 
                 row.innerHTML = `
                     <td data-index="${index + 1}">${index + 1}</td>
-                    <td data-symbol="${stock.symbol || ''}">${stock.symbol || ''}</td>
-                    <td data-isin="${stock.isin || ''}">${stock.isin || ''}</td>
-                    <td data-companyName="${stock.companyName || ''}">${stock.companyName || ''}</td>
+                    <td data-stock="${stock.symbol || ''}" class="stock-details">
+                        <div class="stock-symbol">${stock.symbol || ''}</div>
+                        <div class="stock-isin text-muted small">${stock.isin || ''}</div>
+                        <div class="stock-name text-muted small">${stock.companyName || ''}</div>
+                    </td>
                     <td data-industry="${stock.industry || ''}">${stock.industry || ''}</td>
+                    <td data-brokerPlatforms="${stock.brokerPlatforms || ''}">${stock.brokerPlatforms || ''}</td>
                     <td data-quantity="${quantity}">${quantity}</td>
                     <td data-avgPrice="${avgPrice}">₹${avgPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td data-currentPrice="${currentPrice}">₹${currentPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td data-investedValue="${investedValue}">₹${investedValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td data-currentValue="${currentValue}">₹${currentValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td data-profitLoss="${profitLoss}" class="${profitLossClass}">₹${profitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                    <td data-returnChange="${returnPercentage}" class="${returnChangeClass}">${returnPercentage.toFixed(2)}%</td>
+                    <td data-returnPercentage="${returnPercentage}" class="${returnChangeClass}">${returnPercentage.toFixed(2)}%</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -895,12 +921,12 @@
                 const sortBy = sortSelect.value;
                 filteredData.sort((a, b) => {
                     // Handle text-based sorting
-                    if (['symbol', 'isin', 'industry', 'companyName'].includes(sortBy)) {
+                    if (['symbol', 'industry', 'brokerPlatforms'].includes(sortBy)) {
                         return (a[sortBy] || '').localeCompare(b[sortBy] || '');
                     }
                     
                     // Handle return percentage sorting separately
-                    if (sortBy === 'returnChange') {
+                    if (sortBy === 'returnPercentage') {
                         const aReturn = a.currentPrice === 0 ? 0 : ((a.currentPrice * a.quantity - a.investedValue) / a.investedValue * 100);
                         const bReturn = b.currentPrice === 0 ? 0 : ((b.currentPrice * b.quantity - b.investedValue) / b.investedValue * 100);
                         return bReturn - aReturn;
@@ -1022,7 +1048,10 @@
                                                         <div class="progress-wrapper">
                                                             <div class="progress">
                                                                 <div class="progress-bar bg-success" role="progressbar" 
-                                                                     style="width: ${Math.max(2, portfolioPercentage)}%">
+                                                                     style="width: ${Math.max(2, portfolioPercentage)}%"
+                                                                     aria-valuenow="${portfolioPercentage}" 
+                                                                     aria-valuemin="0" 
+                                                                     aria-valuemax="100">
                                                                 </div>
                                                             </div>
                                                         </div>

@@ -10,7 +10,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -18,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Repository
 public interface NseStockRepository extends JpaRepository<NseStockEntity, UUID> {
@@ -147,34 +147,51 @@ public interface NseStockRepository extends JpaRepository<NseStockEntity, UUID> 
             "GROUP BY e.industry")
     List<SectorInvestmentDTO> getSectorInvestments(@Param("brokerPlatform") String brokerPlatform);
 
-    @Query("SELECT new org.am.mypotrfolio.domain.NseStockDetails(" +
-           "n.symbol, " +
-           "n.isin, " +
-           "SUM(n.quantity), " +
-           "SUM(n.investedValue), " +
-           "CASE WHEN SUM(n.quantity) > 0 THEN SUM(n.investedValue) / SUM(n.quantity) ELSE 0 END, " +
-           "e.industry, " +
-           "e.name, " +
-           "COALESCE(s.closePrice, CASE WHEN SUM(n.quantity) > 0 THEN SUM(n.investedValue) / SUM(n.quantity) ELSE 0 END), " +  
-           "COALESCE(s.closePrice * SUM(n.quantity), SUM(n.investedValue))) " +  
-           "FROM NseStockEntity n " +
-           "LEFT JOIN EquityDataEntity e ON n.symbol = e.symbol " +
-           "LEFT JOIN StockEntity s ON n.symbol = s.symbol " +
-           "AND s.createdAt = (SELECT MAX(s2.createdAt) FROM StockEntity s2 WHERE s2.symbol = n.symbol) " +
-           "WHERE n.userId = :userId " +
-           "AND n.createdDate IN (" +
-           "    SELECT MAX(n2.createdDate) " +
-           "    FROM NseStockEntity n2 " +
-           "    WHERE n2.userId = n.userId " +
-           "    AND n2.brokerPlatform = n.brokerPlatform " +
+    @Query(value = 
+           "SELECT n.symbol, " +
+           "       n.isin, " +
+           "       SUM(n.quantity) as quantity, " +
+           "       SUM(n.invested_value) as invested_value, " +
+           "       CASE WHEN SUM(n.quantity) > 0 THEN SUM(n.invested_value) / SUM(n.quantity) ELSE 0 END as avg_price, " +
+           "       STRING_AGG(DISTINCT n.broker_platform, ',') as broker_platforms, " +
+           "       COALESCE(e.industry, '') as industry, " +
+           "       COALESCE(e.name, '') as company_name, " +
+           "       COALESCE(s.close_price, 0.0) as current_price, " +
+           "       COALESCE(s.close_price * SUM(n.quantity), SUM(n.invested_value)) as current_value " +
+           "FROM nse_stock n " +
+           "LEFT JOIN equity_data e ON n.symbol = e.symbol " +
+           "LEFT JOIN stocks s ON n.symbol = s.symbol " +
+           "AND s.created_at = (SELECT MAX(s2.created_at) FROM stocks s2 WHERE s2.symbol = n.symbol) " +
+           "WHERE n.user_id = :userId " +
+           "AND n.created_date IN ( " +
+           "    SELECT MAX(n2.created_date) " +
+           "    FROM nse_stock n2 " +
+           "    WHERE n2.user_id = n.user_id " +
+           "    AND n2.broker_platform = n.broker_platform " +
            "    AND n2.symbol = n.symbol " +
-           "    GROUP BY n2.brokerPlatform, n2.symbol" +
+           "    GROUP BY n2.broker_platform, n2.symbol " +
            ") " +
-           "GROUP BY n.symbol, n.isin, e.industry, e.name, s.closePrice")
-    List<NseStockDetails> getAggregatedStocksByUserId(@Param("userId") String userId);
+           "GROUP BY n.symbol, n.isin, e.industry, e.name, s.close_price",
+           nativeQuery = true)
+    List<Object[]> getAggregatedStocksByUserIdNative(@Param("userId") String userId);
 
-    //     public NseStockDetails(String symbol, String isin, double quantity, double investedValue, 
-    //     double avePrice, String brokerPlatforms, String industry, String companyName)
+    default List<NseStockDetails> getAggregatedStocksByUserId(String userId) {
+        List<Object[]> results = getAggregatedStocksByUserIdNative(userId);
+        return results.stream()
+            .map(row -> new NseStockDetails(
+                (String) row[0],                    // symbol
+                (String) row[1],                    // isin
+                ((Number) row[2]).doubleValue(),    // quantity
+                ((Number) row[3]).doubleValue(),    // invested_value
+                ((Number) row[4]).doubleValue(),    // avg_price
+                (String) row[5],                    // broker_platforms
+                (String) row[6],                    // industry
+                (String) row[7],                    // company_name
+                ((Number) row[8]).doubleValue(),    // current_price
+                ((Number) row[9]).doubleValue()     // current_value
+            ))
+            .collect(Collectors.toList());
+    }
 
     default List<NseStockDetails> enrichStockDetailsWithEquityData(List<NseStockDetails> stockDetails) {
         return stockDetails.stream()
