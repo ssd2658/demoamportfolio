@@ -26,6 +26,8 @@ public class EquityDataEntity {
     private String series;
     
     private Double faceValue;
+
+    private Double marketCap;
     
     private String industry;
     

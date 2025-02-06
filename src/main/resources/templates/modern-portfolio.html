@@ -317,6 +317,32 @@
             text-overflow: ellipsis;
             max-width: 180px;
         }
+        
+        .sector-details .stock-details {
+            min-width: 180px;
+        }
+        
+        .sector-details .stock-symbol {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1em;
+        }
+        
+        .sector-details .stock-name {
+            font-size: 0.85em;
+            color: var(--secondary-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+        }
+
+        .sector-details .badge {
+            font-size: 0.8em;
+            font-weight: 500;
+            padding: 0.3em 0.6em;
+            text-transform: capitalize;
+        }
     </style>
 </head>
 <body>
@@ -576,7 +602,7 @@
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-hover" id="portfolioTable">
+                    <table class="table table-hover portfolio-table" id="portfolioTable">
                         <thead>
                             <tr>
                                 <th class="sortable" data-sort="index"># <i class="fas fa-sort"></i></th>
@@ -859,7 +885,7 @@
                 const profitLoss = currentPrice === 0 ? 0 : (currentValue - investedValue);
                 const returnPercentage = currentPrice === 0 ? 0 : 
                     (investedValue > 0 ? (profitLoss / investedValue) * 100 : 0);
-
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     
@@ -904,43 +930,45 @@
             const sortSelect = document.getElementById('sortSelect');
 
             function filterAndSortData() {
-                let filteredData = [...portfolio.stocks];
-
-                // Filter
-                const searchTerm = searchInput.value.toLowerCase();
-                if (searchTerm) {
-                    filteredData = filteredData.filter(stock => 
-                        stock.symbol.toLowerCase().includes(searchTerm) ||
-                        (stock.companyName && stock.companyName.toLowerCase().includes(searchTerm)) ||
-                        (stock.industry && stock.industry.toLowerCase().includes(searchTerm)) ||
-                        (stock.isin && stock.isin.toLowerCase().includes(searchTerm))
-                    );
-                }
-
-                // Sort
-                const sortBy = sortSelect.value;
-                filteredData.sort((a, b) => {
-                    // Handle text-based sorting
-                    if (['symbol', 'industry', 'brokerPlatforms'].includes(sortBy)) {
-                        return (a[sortBy] || '').localeCompare(b[sortBy] || '');
-                    }
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const rows = document.querySelectorAll('#portfolioTable tbody tr');
+                
+                rows.forEach(row => {
+                    const stockCell = row.querySelector('.stock-symbol');
+                    if (!stockCell) return;
                     
-                    // Handle return percentage sorting separately
-                    if (sortBy === 'returnPercentage') {
-                        const aReturn = a.currentPrice === 0 ? 0 : ((a.currentPrice * a.quantity - a.investedValue) / a.investedValue * 100);
-                        const bReturn = b.currentPrice === 0 ? 0 : ((b.currentPrice * b.quantity - b.investedValue) / b.investedValue * 100);
-                        return bReturn - aReturn;
+                    const symbol = stockCell.textContent.toLowerCase().trim();
+                    if (searchTerm === '' || symbol.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
                     }
-                    
-                    // Handle other numeric columns
-                    return b[sortBy] - a[sortBy];
                 });
-
-                populatePortfolioTable(filteredData);
             }
 
+            // Add event listener for search input
             searchInput.addEventListener('input', filterAndSortData);
-            sortSelect.addEventListener('change', filterAndSortData);
+
+            // Add event listener for sort select
+            sortSelect.addEventListener('change', () => {
+                const sortBy = sortSelect.value;
+                if (!sortBy) return;
+
+                const tbody = document.querySelector('#portfolioTable tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+
+                rows.sort((a, b) => {
+                    const aValue = a.querySelector(`[data-${sortBy}]`)?.dataset[sortBy] || '';
+                    const bValue = b.querySelector(`[data-${sortBy}]`)?.dataset[sortBy] || '';
+
+                    if (!isNaN(aValue) && !isNaN(bValue)) {
+                        return parseFloat(bValue) - parseFloat(aValue);
+                    }
+                    return aValue.localeCompare(bValue);
+                });
+
+                rows.forEach(row => tbody.appendChild(row));
+            });
         }
 
         function updateSectorAllocation(portfolio) {
@@ -1014,6 +1042,7 @@
                                     <thead>
                                         <tr>
                                             <th>Stock</th>
+                                            <th>Broker</th>
                                             <th>Invested</th>
                                             <th>Current</th>
                                             <th>Sector %</th>
@@ -1028,7 +1057,15 @@
                                             
                                             return `
                                             <tr>
-                                                <td>${stock.symbol || ''} - ${stock.companyName || ''}</td>
+                                                <td>
+                                                    <div class="stock-details">
+                                                        <div class="stock-symbol">${stock.symbol || ''}</div>
+                                                        <div class="stock-name text-muted small">${stock.companyName || ''}</div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-info">${stock.brokerPlatforms || ''}</span>
+                                                </td>
                                                 <td>₹${(stock.investedValue || 0).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                                                 <td>₹${currentStockValue.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                                                 <td>
@@ -1036,7 +1073,10 @@
                                                         <div class="progress-wrapper">
                                                             <div class="progress">
                                                                 <div class="progress-bar bg-info" role="progressbar" 
-                                                                     style="width: ${Math.max(2, stock.sectorAllocationPercentage || 0)}%">
+                                                                     style="width: ${Math.max(2, stock.sectorAllocationPercentage || 0)}%"
+                                                                     aria-valuenow="${stock.sectorAllocationPercentage || 0}" 
+                                                                     aria-valuemin="0" 
+                                                                     aria-valuemax="100">
                                                                 </div>
                                                             </div>
                                                         </div>

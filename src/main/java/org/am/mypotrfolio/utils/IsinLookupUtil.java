@@ -22,7 +22,7 @@ public class IsinLookupUtil {
         }
 
         // Try exact match first
-        Optional<NseSecurityEntity> exactMatch = nseSecurityRepository.findBySecurityName(securityName);
+        Optional<NseSecurityEntity> exactMatch = nseSecurityRepository.findBestMatchBySearchParam(securityName);
         if (exactMatch.isPresent()) {
             log.info("Found ISIN {} for security {} through exact match", 
                 exactMatch.get().getIsin(), securityName);

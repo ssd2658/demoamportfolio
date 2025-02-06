@@ -27,6 +27,7 @@ public interface PortfolioMapper {
     NseStock toNseStockFromZerodha(ZerodhaStockPortfolio stockInfo);
 
     @Mapping(source = "symbol", target = "symbol")
+    @Mapping(source = "isin", target = "isin")
     @Mapping(source = "quantity", target = "quantity", qualifiedByName = "stringToDouble")
     @Mapping(source = "avgPrice", target = "avePrice", qualifiedByName = "stringToDouble")
     @Mapping(source = "investedValue", target = "investedValue", qualifiedByName = "stringToDouble")
