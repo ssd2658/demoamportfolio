@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.util.UUID;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 @Data
 @Builder
@@ -46,6 +48,7 @@ public class NseStockDetails {
     private String brokerPlatform;
     private String isin;
     private String brokerPlatforms; // Comma-separated list of broker platforms
+    private Map<String, Double> brokerQuantities = new LinkedHashMap<>();
     @JsonIgnore
     private String tradeType;
     @JsonIgnore
@@ -111,6 +114,21 @@ public class NseStockDetails {
         this.currentValue = currentValue;
         this.profitLoss = currentValue - investedValue;
         this.returnChange = investedValue > 0 ? (profitLoss / investedValue) * 100 : 0;
+    }
+
+    public NseStockDetails(String symbol, String isin, double quantity, double investedValue, 
+                          double avgPrice, String brokerPlatforms, String industry, 
+                          String companyName, double currentPrice) {
+        this.symbol = symbol;
+        this.isin = isin;
+        this.quantity = quantity;
+        this.investedValue = investedValue;
+        this.avePrice = avgPrice;
+        this.brokerPlatforms = brokerPlatforms;
+        this.industry = industry;
+        this.companyName = companyName;
+        this.currentPrice = currentPrice;
+        this.currentValue = currentPrice * quantity;
     }
 
     public double getTotalInvestment() {

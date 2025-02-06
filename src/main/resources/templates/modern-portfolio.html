@@ -343,6 +343,25 @@
             padding: 0.3em 0.6em;
             text-transform: capitalize;
         }
+        
+        .broker-details {
+            font-size: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .broker-row {
+            display: inline-block;
+            white-space: nowrap;
+        }
+        .broker-name {
+            color: #4e73df;
+            font-weight: 500;
+        }
+        .broker-quantity {
+            color: #5a5c69;
+            margin-left: 2px;
+        }
     </style>
 </head>
 <body>
@@ -859,7 +878,18 @@
                         <div class="stock-name text-muted small">${stock.companyName || ''}</div>
                     </td>
                     <td data-industry="${stock.industry || ''}">${stock.industry || ''}</td>
-                    <td data-brokerPlatforms="${stock.brokerPlatforms || ''}">${stock.brokerPlatforms || ''}</td>
+                    <td data-brokerPlatforms="${stock.brokerPlatforms || ''}">
+                        <div class="broker-details">
+                            ${stock.brokerPlatforms ? stock.brokerPlatforms.split(',').map(broker => {
+                                const brokerName = broker.trim();
+                                const quantity = stock.brokerQuantities && stock.brokerQuantities[brokerName] ? 
+                                    stock.brokerQuantities[brokerName] : 0;
+                                return `<div class="broker-row">
+                                    <span class="broker-name">${brokerName}</span><span class="broker-quantity">(${quantity})</span>
+                                </div>`;
+                            }).join('') : ''}
+                        </div>
+                    </td>
                     <td data-quantity="${quantity}">${quantity}</td>
                     <td data-avgPrice="${avgPrice}">₹${avgPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td data-currentPrice="${currentPrice}">₹${currentPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
@@ -877,6 +907,9 @@
             tbody.innerHTML = '';
 
             stocks.forEach((stock, index) => {
+                const row = document.createElement('tr');
+                
+                // Calculate display values and handle nulls
                 const quantity = stock.quantity || 0;
                 const currentPrice = stock.currentPrice || 0;
                 const avgPrice = stock.avgPrice || 0;
@@ -886,9 +919,7 @@
                 const returnPercentage = currentPrice === 0 ? 0 : 
                     (investedValue > 0 ? (profitLoss / investedValue) * 100 : 0);
                 
-                const row = document.createElement('tr');
                 row.innerHTML = `
-                    
                     <td>${stock.symbol || ''}</td>
                     <td>₹${currentPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td class="text-success">₹${profitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
@@ -903,6 +934,9 @@
             tbody.innerHTML = '';
 
             stocks.forEach((stock, index) => {
+                const row = document.createElement('tr');
+                
+                // Calculate display values and handle nulls
                 const quantity = stock.quantity || 0;
                 const currentPrice = stock.currentPrice || 0;
                 const avgPrice = stock.avgPrice || 0;
@@ -912,11 +946,8 @@
                 const returnPercentage = currentPrice === 0 ? 0 : 
                     (investedValue > 0 ? (profitLoss / investedValue) * 100 : 0);
 
-                const row = document.createElement('tr');
                 row.innerHTML = `
-                   
                     <td>${stock.symbol || ''}</td>
-                   
                     <td>₹${currentPrice.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td class="text-danger">₹${profitLoss.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                     <td class="text-danger">${returnPercentage.toFixed(2)}%</td>
