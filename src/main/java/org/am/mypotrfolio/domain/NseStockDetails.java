@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import java.util.UUID;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 @Data
 @Builder
@@ -28,9 +30,25 @@ public class NseStockDetails {
     private double openPrice;
     private double percentChange;
     private double returnChange;
+    
+    // Time-based changes
+    private double oneDayProfitLoss;
+    private double oneDayReturnPercentage;
+    private double oneDayPreviousPrice;
+    
+    private double oneMonthProfitLoss;
+    private double oneMonthReturnPercentage;
+    private double oneMonthPreviousPrice;
+    
+    private double oneYearProfitLoss;
+    private double oneYearReturnPercentage;
+    private double oneYearPreviousPrice;
+    
     private UUID id;
-
     private String brokerPlatform;
+    private String isin;
+    private String brokerPlatforms; // Comma-separated list of broker platforms
+    private Map<String, Double> brokerQuantities = new LinkedHashMap<>();
     @JsonIgnore
     private String tradeType;
     @JsonIgnore
@@ -55,6 +73,62 @@ public class NseStockDetails {
         this.currentPrice = currentPrice != null ? currentPrice : avePrice;
         this.currentValue = quantity * this.currentPrice;
         this.openPrice = openPrice != null ? openPrice : this.currentPrice;
+    }
+
+    // Constructor for aggregated stock details
+    public NseStockDetails(String symbol, String isin, double quantity, double investedValue, 
+                          double avePrice, String industry, String companyName) {
+        this.symbol = symbol;
+        this.isin = isin;
+        this.quantity = quantity;
+        this.investedValue = investedValue;
+        this.avePrice = avePrice;
+        //this.brokerPlatforms = brokerPlatforms;
+        this.industry = industry;
+        this.companyName = companyName;
+    }
+
+    /**
+     * Constructor for aggregated stock details with broker platforms from JPQL query
+     */
+    public NseStockDetails(
+            String symbol,
+            String isin,
+            double quantity,
+            double investedValue,
+            double avgPrice,
+            String brokerPlatforms,
+            String industry,
+            String companyName,
+            double currentPrice,
+            double currentValue) {
+        this.symbol = symbol;
+        this.isin = isin;
+        this.quantity = quantity;
+        this.investedValue = investedValue;
+        this.avePrice = avgPrice;
+        this.brokerPlatforms = brokerPlatforms;
+        this.industry = industry;
+        this.companyName = companyName;
+        this.currentPrice = currentPrice;
+        this.currentValue = currentValue;
+        this.profitLoss = currentValue - investedValue;
+        this.returnChange = investedValue > 0 ? (profitLoss / investedValue) * 100 : 0;
+    }
+
+    public NseStockDetails(String symbol, String isin, double quantity, double investedValue, 
+                          double avgPrice, String brokerPlatforms, String industry, 
+                          String companyName, double currentPrice) {
+        this.symbol = symbol;
+        this.isin = isin;
+        this.quantity = quantity;
+        this.investedValue = investedValue;
+        this.avePrice = avgPrice;
+        this.brokerPlatforms = brokerPlatforms;
+        this.industry = industry;
+        this.companyName = companyName;
+        this.currentPrice = currentPrice;
+        this.currentValue = currentPrice * quantity;
     }
 
     public double getTotalInvestment() {

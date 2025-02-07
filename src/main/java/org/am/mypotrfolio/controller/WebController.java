@@ -378,6 +378,11 @@ public class WebController {
         }
     }
 
+    @GetMapping("/modern-portfolio")
+    public String modernPortfolio(Model model) {
+        return "modern-portfolio";
+    }
+
     private void setPortfolioCommonData(List<NseStockDetails> nseStockDetails, Model model) {
 
          // Calculate portfolio metrics with null-safe operations

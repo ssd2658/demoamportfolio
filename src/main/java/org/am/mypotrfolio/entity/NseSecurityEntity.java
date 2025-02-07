@@ -7,32 +7,25 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "equity_data")
-public class EquityDataEntity {
+@Table(name = "nse_security_data")
+public class NseSecurityEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
     
-    @Column(nullable = false)
-    private String symbol;
-
-    @Column(unique = true)
-    private String isin;
-    
-    @Column(nullable = false)
-    private String name;
-    
+    private String securityId;
+    private String securityName;
+    private String status;
     private String series;
-    
+    private String isin;
     private Double faceValue;
-
-    private Double marketCap;
-    
     private String industry;
-    
-    @Column(name = "instrument_type")
     private String instrumentType;
+    private String sectorName;
+    private String industryNewName;
+    private String iGroupName;
+    private String iSubGroupName;
     
     @Column(name = "created_at")
     private ZonedDateTime createdAt;

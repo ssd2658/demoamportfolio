@@ -1,18 +1,22 @@
 package org.am.mypotrfolio.domain;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.Builder;
 
 @Getter
+@Setter
 @NoArgsConstructor
 public class DhanStockPortfolio {
 
     @JsonProperty("Name")
     private String name;
+
+    @JsonProperty("securityId")
+    private String securityId;
 
     @JsonProperty("Quantity")
     private int quantity;
@@ -34,4 +38,7 @@ public class DhanStockPortfolio {
 
     @JsonProperty("P&L %")
     private double profitLossPercentage;
+
+    @JsonProperty("ISIN")
+    private String isin;
 }

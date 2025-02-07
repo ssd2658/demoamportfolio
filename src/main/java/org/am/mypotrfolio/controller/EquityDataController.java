@@ -1,9 +1,9 @@
 package org.am.mypotrfolio.controller;
 
-
 import lombok.RequiredArgsConstructor;
 
 import org.am.mypotrfolio.dto.EquityDataDTO;
+import org.am.mypotrfolio.dto.NseSecurityDto;
 import org.am.mypotrfolio.service.EquityDataService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +26,16 @@ public class EquityDataController {
             return ResponseEntity.ok(processedData);
         } catch (IOException e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/upload/nsesecurity/excel")
+    public ResponseEntity<String> uploadNseSecurityExcel(@RequestParam("file") MultipartFile file) {
+        try {
+            List<List<NseSecurityDto>> processedBatches = equityDataService.processNseSecurityExcelFile(file);
+            return ResponseEntity.ok(String.format("Successfully processed %d batches of NSE security data", processedBatches.size()));
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().body("Error processing file: " + e.getMessage());
         }
     }
     

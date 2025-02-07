@@ -5,13 +5,20 @@ import lombok.SneakyThrows;
 import org.am.mypotrfolio.domain.Company;
 import org.am.mypotrfolio.domain.NseStock;
 import org.am.mypotrfolio.domain.NseStockDetails;
+import org.am.mypotrfolio.domain.Portfolio;
+import org.am.mypotrfolio.dto.StockPriceDTO;
+
 import org.am.mypotrfolio.enums.FilterBy;
 import org.am.mypotrfolio.mapper.CompanyMapper;
 import org.am.mypotrfolio.mapper.NseStockMapper;
 import org.am.mypotrfolio.repo.CompanyRepository;
 import org.am.mypotrfolio.repo.NseStockRepository;
+import org.am.mypotrfolio.service.StockService;
 import org.am.mypotrfolio.utils.ExcelHelper;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -19,10 +26,13 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,10 +42,12 @@ import static org.am.mypotrfolio.model.Constant.COMPANY_FILE;
 @Service
 @RequiredArgsConstructor
 public class TestService {
+    private static final Logger log = LoggerFactory.getLogger(TestService.class);
+
     private final NseStockRepository nseStockRepository;
+    private final StockService stockService;
     private final CompanyRepository companyRepository;
     private final ExcelHelper excelHelper;
-
 
     public Map<String, NseStock> getNseStocks(FilterBy filterBy, Integer maxCount) {
         // Fetch stocks based on the filter
@@ -108,6 +120,73 @@ public class TestService {
 
     public List<NseStockDetails> getAllStocks() {
         return nseStockRepository.getInvestedStock();
+    }
+
+    public Portfolio getAllStocksByUserId(String userId) {
+        log.info("Fetching portfolio data for user: {}", userId);
+        try {
+            List<NseStockDetails> stocks = nseStockRepository.getAggregatedStocksByUserId(userId);
+            log.info("Found {} stocks for user {}", stocks.size(), userId);
+
+            // Calculate time-based changes for each stock
+            stocks.forEach(stock -> {
+                if (stock.getCurrentPrice() > 0) {
+                    calculateTimeBasedChanges(stock);
+                }
+            });
+
+            // Calculate portfolio totals
+            double totalInvestment = stocks.stream()
+                    .mapToDouble(NseStockDetails::getInvestedValue)
+                    .sum();
+
+            double totalCurrentValue = stocks.stream()
+                    .mapToDouble(stock -> stock.getCurrentPrice() * stock.getQuantity())
+                    .sum();
+
+            // Calculate sector allocations
+            Map<String, Portfolio.SectorAllocation> sectorAllocations = calculateSectorAllocations(stocks, totalInvestment);
+
+            // Get top performers and losers
+            List<NseStockDetails> sortedByReturn = stocks.stream()
+                    .filter(stock -> stock.getCurrentPrice() > 0)
+                    .sorted((a, b) -> {
+                        double aReturn = ((a.getCurrentPrice() * a.getQuantity() - a.getInvestedValue()) / a.getInvestedValue()) * 100;
+                        double bReturn = ((b.getCurrentPrice() * b.getQuantity() - b.getInvestedValue()) / b.getInvestedValue()) * 100;
+                        return Double.compare(bReturn, aReturn);
+                    })
+                    .collect(Collectors.toList());
+
+            List<NseStockDetails> topPerformers = sortedByReturn.stream()
+                    .limit(5)
+                    .collect(Collectors.toList());
+
+            List<NseStockDetails> topLosers = sortedByReturn.stream()
+                    .skip(Math.max(0, sortedByReturn.size() - 5))
+                    .collect(Collectors.toList());
+
+            // Build and return portfolio
+            Portfolio portfolio = Portfolio.builder()
+                    .stocks(stocks)
+                    .totalInvestment(totalInvestment)
+                    .totalCurrentValue(totalCurrentValue)
+                    .totalProfitLoss(totalCurrentValue - totalInvestment)
+                    .totalReturnPercentage(totalInvestment > 0 ? ((totalCurrentValue - totalInvestment) / totalInvestment) * 100 : 0)
+                    .topPerformers(topPerformers)
+                    .topLosers(topLosers)
+                    .totalStocks(stocks.size())
+                    .totalIndustries((int) stocks.stream().map(NseStockDetails::getIndustry).distinct().count())
+                    .sectorAllocations(sectorAllocations)
+                    .build();
+
+            log.info("Successfully built portfolio for user {}. Total Investment: {}, Total Current Value: {}", 
+                userId, totalInvestment, totalCurrentValue);
+            return portfolio;
+
+        } catch (Exception e) {
+            log.error("Error fetching portfolio data for user {}: {}", userId, e.getMessage(), e);
+            throw new RuntimeException("Failed to fetch portfolio data", e);
+        }
     }
 
     public List<NseStockDetails> getAllStocks(String brokerPlatform) {
@@ -184,5 +263,75 @@ public class TestService {
             }
         }
         return resource;
+    }
+
+    private void calculateTimeBasedChanges(NseStockDetails stock) {
+        // Get historical prices
+        StockPriceDTO currentStock = stockService.getLastStockPrice(stock.getIsin());
+        if (currentStock != null) {
+            calculateOneDayChange(stock, currentStock);
+            calculateOneMonthChange(stock);
+            calculateOneYearChange(stock);
+        }
+    }
+
+    private Map<String, Portfolio.SectorAllocation> calculateSectorAllocations(List<NseStockDetails> stocks, double totalInvestment) {
+        Map<String, List<NseStockDetails>> sectorGroups = stocks.stream()
+                .filter(stock -> stock.getIndustry() != null && !stock.getIndustry().isEmpty())
+                .collect(Collectors.groupingBy(NseStockDetails::getIndustry));
+
+        return sectorGroups.entrySet().stream()
+                .collect(Collectors.toMap(
+                    Map.Entry::getKey,
+                    entry -> {
+                        List<NseStockDetails> sectorStocks = entry.getValue();
+                        double sectorInvestment = sectorStocks.stream()
+                                .mapToDouble(NseStockDetails::getInvestedValue)
+                                .sum();
+                        double sectorCurrentValue = sectorStocks.stream()
+                                .mapToDouble(stock -> stock.getCurrentPrice() * stock.getQuantity())
+                                .sum();
+                        
+                        return Portfolio.SectorAllocation.builder()
+                                .sector(entry.getKey())
+                                .investedAmount(sectorInvestment)
+                                .currentValue(sectorCurrentValue)
+                                .allocationPercentage((sectorInvestment / totalInvestment) * 100)
+                                .numberOfStocks(sectorStocks.size())
+                                .stocks(sectorStocks)
+                                .build();
+                    }
+                ));
+    }
+
+    private void calculateOneDayChange(NseStockDetails stock, StockPriceDTO currentStock) {
+        double previousDayPrice = currentStock.getPreviousClose() != null ? 
+            currentStock.getPreviousClose() : stock.getCurrentPrice();
+        stock.setOneDayPreviousPrice(previousDayPrice);
+        stock.setOneDayProfitLoss((stock.getCurrentPrice() - previousDayPrice) * stock.getQuantity());
+        stock.setOneDayReturnPercentage(previousDayPrice > 0 ? 
+            ((stock.getCurrentPrice() - previousDayPrice) / previousDayPrice) * 100 : 0);
+    }
+
+    private void calculateOneMonthChange(NseStockDetails stock) {
+        LocalDateTime oneMonthAgo = LocalDateTime.now(ZoneId.systemDefault()).minusMonths(1);
+        StockPriceDTO oneMonthPrice = stockService.getHistoricalPrice(stock.getIsin(), oneMonthAgo);
+        if (oneMonthPrice != null) {
+            double oneMonthPreviousPrice = oneMonthPrice.getLastPrice();
+            stock.setOneMonthPreviousPrice(oneMonthPreviousPrice);
+            stock.setOneMonthProfitLoss((stock.getCurrentPrice() - oneMonthPreviousPrice) * stock.getQuantity());
+            stock.setOneMonthReturnPercentage(((stock.getCurrentPrice() - oneMonthPreviousPrice) / oneMonthPreviousPrice) * 100);
+        }
+    }
+
+    private void calculateOneYearChange(NseStockDetails stock) {
+        LocalDateTime oneYearAgo = LocalDateTime.now(ZoneId.systemDefault()).minusYears(1);
+        StockPriceDTO oneYearPrice = stockService.getHistoricalPrice(stock.getIsin(), oneYearAgo);
+        if (oneYearPrice != null) {
+            double oneYearPreviousPrice = oneYearPrice.getLastPrice();
+            stock.setOneYearPreviousPrice(oneYearPreviousPrice);
+            stock.setOneYearProfitLoss((stock.getCurrentPrice() - oneYearPreviousPrice) * stock.getQuantity());
+            stock.setOneYearReturnPercentage(((stock.getCurrentPrice() - oneYearPreviousPrice) / oneYearPreviousPrice) * 100);
+        }
     }
 }
